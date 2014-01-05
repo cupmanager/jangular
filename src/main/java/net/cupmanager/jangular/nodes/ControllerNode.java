@@ -3,13 +3,19 @@ package net.cupmanager.jangular.nodes;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import net.cupmanager.jangular.AbstractController;
-import net.cupmanager.jangular.Compiler;
+import net.cupmanager.jangular.JangularCompiler;
+import net.cupmanager.jangular.JangularUtils;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.injection.Injector;
 
+import org.apache.commons.lang.ClassUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -19,13 +25,13 @@ import org.objectweb.asm.Type;
 public class ControllerNode implements JangularNode {
 	
 	public static abstract class ControllerScopeValueCopier {
-		public void copy(Scope targetScope, Scope controllerScope, Scope parentScope) {
+		public void copy(Scope targetScope, /*Scope controllerScope,*/ Scope parentScope) {
 			
 		}
 	}
 	
 	private JangularNode node;
-	private AbstractController controllerInstance;
+	//private AbstractController controllerInstance;
 	
 	private ControllerScopeValueCopier valueCopier;
 	private Class<? extends Scope> controllerScopeClass;
@@ -38,8 +44,8 @@ public class ControllerNode implements JangularNode {
 		try {
 			this.controllerClass = (Class<? extends AbstractController>) Class.forName(controllerClassName);
 			this.node = node;
-			this.controllerInstance = controllerClass.newInstance();
-			this.controllerScopeClass = controllerInstance.getScopeClass();
+			//this.controllerInstance = controllerClass.newInstance();
+			this.controllerScopeClass = AbstractController.getScopeClass(controllerClass);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -50,21 +56,55 @@ public class ControllerNode implements JangularNode {
 	public void eval(final Scope parentScope, StringBuilder sb, EvaluationContext context) {
 		
 		try {
+			AbstractController controllerInstance = controllerClass.newInstance();
 			injector.inject(controllerInstance, context);
-			Scope controllerScope = controllerScopeClass.newInstance();
-			controllerInstance.eval(controllerScope);
+			
+			//Scope controllerScope = controllerScopeClass.newInstance();
+			
 			Scope nodeScope = dynamicControllerScopeClass.newInstance();
-			valueCopier.copy(nodeScope, controllerScope, parentScope);
+			valueCopier.copy(nodeScope, parentScope);
+			
+			controllerInstance.eval(nodeScope);
 			
 			node.eval(nodeScope, sb, context);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	private List<String> getControllerScopeIns() {
+
+		Field[] fields = controllerScopeClass.getFields();
+		
+		List<String> ins = new ArrayList<String>();
+		for( Field f : fields ) {
+			if( f.getAnnotation(In.class) != null ){
+				ins.add(f.getName());
+			}
+		}
+		return ins;
+	}
+	
+	private List<String> getControllerScopeFields() {
+		
+		Field[] fields = controllerScopeClass.getFields();
+		
+		List<String> names = new ArrayList<String>();
+		for( Field f : fields ) {
+			names.add(f.getName());
+		}
+		return names;
+	}
 
 	@Override
 	public Collection<String> getReferencedVariables() {
-		return new ArrayList<String>(node.getReferencedVariables());
+		Set<String> names = new HashSet<String>(node.getReferencedVariables());
+		
+		names.removeAll(getControllerScopeFields());
+		
+		// All ins are required
+		names.addAll(getControllerScopeIns());
+		return names;
 	}
 	
 	
@@ -79,12 +119,16 @@ public class ControllerNode implements JangularNode {
 	public static int controllerScopeSuffix = 0;
 	
 	@Override
-	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass) throws Exception {
-		this.dynamicControllerScopeClass = createDynamicControllerScopeClass(controllerScopeClass, parentScopeClass);
+	public void compileScope(Class<? extends Scope> parentScopeClass, 
+			Class<? extends EvaluationContext> evaluationContextClass,
+			JangularCompiler compiler) throws Exception {
+		this.dynamicControllerScopeClass = createDynamicControllerScopeClass(controllerScopeClass, parentScopeClass, compiler);
 
-		this.node.compileScope(dynamicControllerScopeClass, evaluationContextClass);
 		
-		Class<? extends ControllerScopeValueCopier> valueCopierClass = createValueCopierClass(dynamicControllerScopeClass, controllerScopeClass, parentScopeClass);
+		this.node.compileScope(dynamicControllerScopeClass, evaluationContextClass, compiler);
+		
+		Class<? extends ControllerScopeValueCopier> valueCopierClass = 
+				createValueCopierClass(getReferencedVariables(),dynamicControllerScopeClass, parentScopeClass);
 		this.valueCopier = valueCopierClass.newInstance();
 		
 
@@ -94,7 +138,8 @@ public class ControllerNode implements JangularNode {
 	
 	private Class<? extends Scope> createDynamicControllerScopeClass(
 			Class<? extends Scope> controllerScopeClass, 
-			Class<? extends Scope> parentScopeClass) {
+			Class<? extends Scope> parentScopeClass, 
+			JangularCompiler compiler) {
 		
 		ArrayList<String> fieldsInDynamicClass = new ArrayList<String>(getReferencedVariables());
 		
@@ -105,41 +150,56 @@ public class ControllerNode implements JangularNode {
 		String className = "ControllerScope" + controllerScopeSuffix++;
 		
 		cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className, null,
-				Type.getInternalName(Scope.class), null);
+				Type.getInternalName(controllerScopeClass), null);
 		
 		/* FIELDS */
 		for (String fieldName : fieldsInDynamicClass) {
 			Field controllerField = getFieldSafe(controllerScopeClass, fieldName);
 			Field parentField = getFieldSafe(parentScopeClass, fieldName);
 			
-			Class fieldType = Object.class;
 			if (controllerField != null) {
-				fieldType = controllerField.getType();
+				// The field already exists in the controllerScope
+				// Just make sure that it is availiable if necessary
+				
+				Class fieldType = controllerField.getType();
+				fieldType = ClassUtils.primitiveToWrapper(fieldType);
+				
+				if( controllerField.getAnnotation(In.class) != null ){
+					if( parentField == null ) {
+						throw new RuntimeException(String.format(
+							"The @In-field %s in %s is not availiable in the parent scope (%s)!",
+							fieldName, controllerScopeClass.getName(), parentScopeClass.getName()));
+					} 
+				}
+				
+				if( parentField != null ) {
+					compiler.assertCasts(controllerField, parentField);
+				} 
 			} else {
-				fieldType = parentField.getType();
+				Class fieldType = parentField.getType();
+				
+				fv = cw.visitField(Opcodes.ACC_PUBLIC, fieldName, Type.getDescriptor(fieldType), null, null);
+				fv.visitEnd();
 			}
-			
-			fv = cw.visitField(Opcodes.ACC_PUBLIC, fieldName, Type.getDescriptor(fieldType), null, null);
-			fv.visitEnd();
 		}
 		
 		/* CONSTRUCTOR */
 		mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
 		mv.visitCode();
 		mv.visitVarInsn(Opcodes.ALOAD, 0);
-		mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(Scope.class), "<init>", "()V");
+		mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(controllerScopeClass), "<init>", "()V");
 		mv.visitInsn(Opcodes.RETURN);
 		mv.visitMaxs(1, 1);
 		mv.visitEnd();
 		
 		cw.visitEnd();
 		
-		return Compiler.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompiler.loadScopeClass(cw.toByteArray(), className);
 	}
 	
 	private static Class<? extends ControllerScopeValueCopier> createValueCopierClass(
+			Collection<String> fieldNames,
 			Class<? extends Scope> targetScopeClass, 
-			Class<? extends Scope> controllerScopeClass, 
 			Class<? extends Scope> parentScopeClass) throws NoSuchFieldException, SecurityException{
 		
 		ClassWriter cw = new ClassWriter(0);
@@ -160,119 +220,45 @@ public class ControllerNode implements JangularNode {
 		mv.visitMaxs(1, 1);
 		mv.visitEnd();
 		
-		/* copy() */
+		/* copy(Scope target, Scope parent) */
 		mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "copy",
-				"(Lnet/cupmanager/jangular/Scope;Lnet/cupmanager/jangular/Scope;Lnet/cupmanager/jangular/Scope;)V", null, null);
+				"(Lnet/cupmanager/jangular/Scope;Lnet/cupmanager/jangular/Scope;)V", null, null);
 		mv.visitCode();
 		
 		mv.visitVarInsn(Opcodes.ALOAD, 1);
 		mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(targetScopeClass));
-		mv.visitVarInsn(Opcodes.ASTORE, 4);
+		mv.visitVarInsn(Opcodes.ASTORE, 3);
 		
 		mv.visitVarInsn(Opcodes.ALOAD, 2);
-		mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(controllerScopeClass));
-		mv.visitVarInsn(Opcodes.ASTORE, 5);
-		
-		mv.visitVarInsn(Opcodes.ALOAD, 3);
 		mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(parentScopeClass));
-		mv.visitVarInsn(Opcodes.ASTORE, 6);
+		mv.visitVarInsn(Opcodes.ASTORE, 4);
 		
-		
-		for (Field field : targetScopeClass.getFields()) {
-			Field controllerField = getFieldSafe(controllerScopeClass, field.getName());
-			if (controllerField != null) {
-				mv.visitVarInsn(Opcodes.ALOAD, 4);
-				mv.visitVarInsn(Opcodes.ALOAD, 5);
-				mv.visitFieldInsn(Opcodes.GETFIELD, 
-						Type.getInternalName(controllerScopeClass), 
-						controllerField.getName(),
-						Type.getDescriptor(controllerField.getType()));
-				if( controllerField.getType().isPrimitive() ){
-					unbox(controllerField.getType(), mv);
-				} else {
-					mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(controllerField.getType()));
-				}
-				mv.visitFieldInsn(Opcodes.PUTFIELD, 
-						Type.getInternalName(targetScopeClass), 
-						controllerField.getName(),
-						Type.getDescriptor(controllerField.getType()));
-				
-			} else {
-				Field parentField = getFieldSafe(parentScopeClass, field.getName());
-				if (parentField != null) {
-					mv.visitVarInsn(Opcodes.ALOAD, 4);
-					mv.visitVarInsn(Opcodes.ALOAD, 6);
-					mv.visitFieldInsn(Opcodes.GETFIELD, 
-							Type.getInternalName(parentScopeClass), 
-							parentField.getName(),
-							Type.getDescriptor(parentField.getType()));
-					if( parentField.getType().isPrimitive() ){
-						unbox(parentField.getType(), mv);
-					} else {
-						mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(parentField.getType()));
-					}
-					mv.visitFieldInsn(Opcodes.PUTFIELD, 
-							Type.getInternalName(targetScopeClass), 
-							parentField.getName(),
-							Type.getDescriptor(parentField.getType()));
-				} else {
-					throw new RuntimeException("Field wasnt in either controller/parent");
-				}
-			}
+		for (String fieldName : fieldNames) {
+			Field targetField = getFieldSafe(targetScopeClass, fieldName);
+			Field parentField = getFieldSafe(parentScopeClass, fieldName);
 			
+			mv.visitVarInsn(Opcodes.ALOAD, 3);
+			mv.visitVarInsn(Opcodes.ALOAD, 4);
+			mv.visitFieldInsn(Opcodes.GETFIELD, 
+					Type.getInternalName(parentScopeClass), 
+					fieldName,
+					Type.getDescriptor(parentField.getType()));
+			
+			JangularUtils.checkcast(targetField, parentField, mv);
+			
+			mv.visitFieldInsn(Opcodes.PUTFIELD, 
+					Type.getInternalName(targetScopeClass), 
+					fieldName,
+					Type.getDescriptor(targetField.getType()));	
 		}
 		
 		mv.visitInsn(Opcodes.RETURN);
-		mv.visitMaxs(3, 7);
+		mv.visitMaxs(3, 6);
 		mv.visitEnd();
 		
 		cw.visitEnd();
 		
-		return Compiler.loadScopeClass(cw.toByteArray(), className);
-	}
-
-	private static void unbox(Class<?> fieldType, MethodVisitor mv) {
-		Type type = Type.getType(fieldType);
-		switch (type.getSort()) {
-		case Type.BOOLEAN:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Boolean");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z");
-			break;
-		case Type.BYTE:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Byte");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Byte", "byteValue", "()B");
-			break;
-		case Type.CHAR:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Character");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C");
-			break;
-		case Type.SHORT:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Short");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Short", "shortValue", "()S");
-			break;
-		case Type.INT:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Integer");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I");
-			break;
-		case Type.FLOAT:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Float");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Float", "floatValue", "()F");
-			break;
-		case Type.LONG:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Long");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J");
-			break;
-		case Type.DOUBLE:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Double");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D");
-			break;
-		case Type.ARRAY:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, type.getDescriptor());
-			break;
-		case Type.OBJECT:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, type.getInternalName());
-			break;
-		}
+		return JangularCompiler.loadScopeClass(cw.toByteArray(), className);
 	}
 
 }

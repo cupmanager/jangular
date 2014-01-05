@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.cupmanager.jangular.Compiler;
+import net.cupmanager.jangular.JangularCompiler;
 import net.cupmanager.jangular.annotations.Inject;
 import net.cupmanager.jangular.annotations.Provides;
 
@@ -79,7 +79,7 @@ public abstract class Injector {
 		cw.visitEnd();
 		
 		
-		return Compiler.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompiler.loadScopeClass(cw.toByteArray(), className);
 	}
 	
 	

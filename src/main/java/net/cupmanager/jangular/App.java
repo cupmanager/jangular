@@ -17,6 +17,7 @@ public class App {
 	
 	public static class AppScope extends Scope {
 		public Object items;
+		public int i = 5;
 	}
 	
 	
@@ -32,7 +33,7 @@ public class App {
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(MatchTableDirective.class);
     	
-        Compiler compiler = new Compiler(repo);
+        JangularCompiler compiler = new JangularCompiler(repo);
         
         try {
         	long start = System.currentTimeMillis();

@@ -32,7 +32,7 @@ public class DirectiveRepository {
 		String templateFile = c.getAnnotation(Template.class).value();
 		
 		try {
-			CompositeNode compositeNode = new Compiler(this).internalCompile(new FileInputStream(templateFile));
+			CompositeNode compositeNode = new JangularCompiler(this).internalCompile(new FileInputStream(templateFile));
 			
 			AbstractDirective directiveInstance = c.newInstance();
 			

@@ -2,7 +2,7 @@ package net.cupmanager.jangular.expressions;
 
 import java.util.Collection;
 
-import net.cupmanager.jangular.Compiler;
+import net.cupmanager.jangular.JangularCompiler;
 import net.cupmanager.jangular.Scope;
 
 import org.mvel2.MVEL;
@@ -102,7 +102,7 @@ public abstract class CompiledExpression {
 		cw.visitEnd();
 		
 				
-		Class<? extends CompiledExpression> cl = Compiler.loadScopeClass(cw.toByteArray(), className);
+		Class<? extends CompiledExpression> cl = JangularCompiler.loadScopeClass(cw.toByteArray(), className);
 		
 		try {
 			return cl.newInstance();

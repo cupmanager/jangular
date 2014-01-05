@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.cupmanager.jangular.Compiler;
+import net.cupmanager.jangular.JangularCompiler;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
@@ -95,8 +95,9 @@ public class RepeatNode implements JangularNode {
 	
 	
 	@Override
-	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass) throws Exception {
-		
+	public void compileScope(Class<? extends Scope> parentScopeClass, 
+			Class<? extends EvaluationContext> evaluationContextClass,
+			JangularCompiler compiler) throws Exception {
 		String className = "RepeatScope" + (repeatScopeSuffix++);
 		String parentClassName = parentScopeClass.getName().replace('.', '/');
 		
@@ -183,15 +184,14 @@ public class RepeatNode implements JangularNode {
 		}
 		 */
 		
-		Class<? extends RepeatNodeScope> cl = Compiler.loadScopeClass(cw.toByteArray(), className);
+		Class<? extends RepeatNodeScope> cl = JangularCompiler.loadScopeClass(cw.toByteArray(), className);
 		
 		//this.setMethod = cl.getMethod("set", parentScopeClass, int.class, Object.class);
 //		this.nodeScope = cl.newInstance();
 		this.nodeScopeClass = cl;
 		
 		
-		
-		node.compileScope(cl, evaluationContextClass);
+		node.compileScope(cl, evaluationContextClass, compiler);
 	}
 
 }

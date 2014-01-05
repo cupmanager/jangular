@@ -9,7 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.cupmanager.jangular.AbstractDirective;
-import net.cupmanager.jangular.Compiler;
+import net.cupmanager.jangular.JangularCompiler;
+import net.cupmanager.jangular.JangularUtils;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.expressions.CompiledExpression;
@@ -125,8 +126,10 @@ public class DirectiveNode implements JangularNode {
 	public static int directiveScopeSuffix = 0;
 	
 	@Override
-	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass) throws Exception {
-		
+	public void compileScope(Class<? extends Scope> parentScopeClass, 
+			Class<? extends EvaluationContext> evaluationContextClass,
+			JangularCompiler compiler) throws Exception {
+
 		List<String> fieldNames = null;
 		List<Class<?>> fieldTypes = null;
 		
@@ -145,8 +148,7 @@ public class DirectiveNode implements JangularNode {
 			inExpressions[i] = CompiledExpression.compile(attrs.get(fieldNames.get(i)), parentScopeClass);
 		}
 		
-		
-		this.node.compileScope(directiveScopeClass, evaluationContextClass);
+		this.node.compileScope(directiveScopeClass, evaluationContextClass, compiler);
 		
 		Class<? extends DirectiveScopeValueCopier> valueCopierClass = createValueCopierClass(directiveScopeClass,fieldNames,fieldTypes);
 		this.valueCopier = valueCopierClass.newInstance();
@@ -189,7 +191,7 @@ public class DirectiveNode implements JangularNode {
 		
 		cw.visitEnd();
 		
-		return Compiler.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompiler.loadScopeClass(cw.toByteArray(), className);
 	}
 	
 	private Class<? extends DirectiveScopeValueCopier> createValueCopierClass(Class<? extends Scope> targetScopeClass, List<String> fieldNames, List<Class<?>> fieldTypes){
@@ -232,11 +234,7 @@ public class DirectiveNode implements JangularNode {
 			mv.visitIntInsn(Opcodes.BIPUSH, i);
 			mv.visitInsn(Opcodes.AALOAD);
 			if( fieldTypes != null ){
-				if( fieldTypes.get(i).isPrimitive() ){
-					unbox(fieldTypes.get(i), mv);
-				} else {
-					mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(fieldTypes.get(i)));
-				}
+				JangularUtils.checkcast(fieldTypes.get(0), Object.class, mv);
 				mv.visitFieldInsn(Opcodes.PUTFIELD, targetScopeClass.getName().replace('.', '/'), fieldNames.get(i),
 						Type.getDescriptor(fieldTypes.get(i)));
 			} else {
@@ -252,7 +250,7 @@ public class DirectiveNode implements JangularNode {
 		
 		cw.visitEnd();
 		
-		return Compiler.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompiler.loadScopeClass(cw.toByteArray(), className);
 	}
 
 	private static void unbox(Class<?> fieldType, MethodVisitor mv) {

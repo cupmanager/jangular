@@ -42,6 +42,7 @@ public class JangularCompiler {
 			int i = 1;
 			for( String warning : warnings ){
 				System.err.println(i + " - "+warning);
+				i++;
 			}
 		}
 		

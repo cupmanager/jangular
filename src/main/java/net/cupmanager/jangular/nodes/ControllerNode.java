@@ -50,6 +50,7 @@ public class ControllerNode implements JangularNode {
 	public void eval(final Scope parentScope, StringBuilder sb, EvaluationContext context) {
 		
 		try {
+			context.inject(controllerInstance);
 			Scope controllerScope = controllerScopeClass.newInstance();
 			controllerInstance.eval(controllerScope);
 			Scope nodeScope = dynamicControllerScopeClass.newInstance();

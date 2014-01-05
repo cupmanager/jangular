@@ -2,11 +2,12 @@ package net.cupmanager.jangular.testing;
 
 import java.util.Map;
 
-import net.cupmanager.jangular.App.Item;
 import net.cupmanager.jangular.AbstractDirective;
+import net.cupmanager.jangular.App.Item;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.Directive;
 import net.cupmanager.jangular.annotations.In;
+import net.cupmanager.jangular.annotations.Inject;
 import net.cupmanager.jangular.annotations.Template;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.testing.MatchTableDirective.MatchTableScope;
@@ -15,12 +16,12 @@ import net.cupmanager.jangular.testing.MatchTableDirective.MatchTableScope;
 @Template("matchtable.html")
 public class MatchTableDirective extends AbstractDirective<MatchTableScope> {
 	
-//	@Inject
-//	WebRequest webRequest;
+	@Inject String hej;
 	
 	public static class MatchTableScope extends Scope {
 		@In public Item item;
 		public boolean includeheaders;
+		public String hej;
 	}
 	
 	@Override
@@ -30,7 +31,7 @@ public class MatchTableDirective extends AbstractDirective<MatchTableScope> {
 	
 	@Override
 	public void eval(MatchTableScope scope) {
-		
+		scope.hej = hej;
 	}
 	
 }

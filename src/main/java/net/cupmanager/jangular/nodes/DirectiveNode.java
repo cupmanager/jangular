@@ -104,6 +104,7 @@ public class DirectiveNode implements JangularNode {
 			valueCopier.copy(nodeScope,inValues);
 			
 			if( hasDirectiveScope ) {
+				context.inject(directiveInstance);
 				directiveInstance.eval(nodeScope);
 			}
 			

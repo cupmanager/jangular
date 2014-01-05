@@ -19,8 +19,6 @@ public class App {
 	
     public static void main( String[] args )
     {
-    	
-    	
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(MatchTableDirective.class);
     	
@@ -53,6 +51,10 @@ public class App {
 			StringBuilder sb = new StringBuilder();
 			
 			EvaluationContext context = new EvaluationContext();
+			context.add(String.class, "Greeting", "Hejsan");
+			context.add(String.class, "URL", "http://localhost/whatever");
+			context.add(String.class, "default string");
+			
 			
 			for( int i = 0; i < 500; i++ ) {
 				sb = new StringBuilder();

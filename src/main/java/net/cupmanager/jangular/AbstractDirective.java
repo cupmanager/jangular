@@ -1,9 +1,8 @@
-package net.cupmanager.jangular.testing;
+package net.cupmanager.jangular;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.nodes.CompositeNode;
 
 public abstract class AbstractDirective<T extends Scope> {

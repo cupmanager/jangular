@@ -52,17 +52,18 @@ public class App {
 			scope.items = _items;
 			StringBuilder sb = new StringBuilder();
 			
+			EvaluationContext context = new EvaluationContext();
 			
 			for( int i = 0; i < 500; i++ ) {
 				sb = new StringBuilder();
-				node.eval(scope, sb);
+				node.eval(scope, sb, context);
 			}
 			
 			start = System.currentTimeMillis();
 			int times = 100;
 			for( int i = 0; i < times; i++ ) {
 				sb = new StringBuilder();
-				node.eval(scope, sb);
+				node.eval(scope, sb, context);
 			}
 			
 			end = System.currentTimeMillis();

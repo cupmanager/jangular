@@ -7,6 +7,7 @@ import java.util.List;
 
 import net.cupmanager.jangular.AbstractController;
 import net.cupmanager.jangular.Compiler;
+import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
 
 import org.mvel2.util.ReflectionUtil;
@@ -27,8 +28,6 @@ public class ControllerNode implements JangularNode {
 	private JangularNode node;
 	private AbstractController controllerInstance;
 	
-	private List<String> nodeVariables;
-	
 	private ControllerScopeValueCopier valueCopier;
 	private Class<? extends Scope> controllerScopeClass;
 	private Class<? extends AbstractController> controllerClass;
@@ -47,28 +46,8 @@ public class ControllerNode implements JangularNode {
 	}
 	
 
-	private List<String> getScopeProvidedVariables() {
-		Field[] fields = controllerScopeClass.getFields();
-		
-		List<String> ins = new ArrayList<String>();
-		for( Field f : fields ) {
-			ins.add(f.getName());
-		}
-		return ins;
-	}
-	
-	private List<Class<?>> getScopeProvidedTypes() {
-		Field[] fields = controllerScopeClass.getFields();
-		
-		List<Class<?>> ins = new ArrayList<Class<?>>();
-		for( Field f : fields ) {
-			ins.add(f.getType());
-		}
-		return ins;
-	}
-	
-
-	public void eval(final Scope parentScope, StringBuilder sb) {
+	@Override
+	public void eval(final Scope parentScope, StringBuilder sb, EvaluationContext context) {
 		
 		try {
 			Scope controllerScope = controllerScopeClass.newInstance();
@@ -76,19 +55,19 @@ public class ControllerNode implements JangularNode {
 			Scope nodeScope = dynamicControllerScopeClass.newInstance();
 			valueCopier.copy(nodeScope, controllerScope, parentScope);
 			
-			node.eval(nodeScope, sb);
+			node.eval(nodeScope, sb, context);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
+	@Override
 	public Collection<String> getReferencedVariables() {
-		nodeVariables = new ArrayList<String>(node.getReferencedVariables());
-		return nodeVariables;
+		return new ArrayList<String>(node.getReferencedVariables());
 	}
 	
 	
-	private static Field getFieldSafe(Class c, String fieldName) {
+	private static Field getFieldSafe(Class<?> c, String fieldName) {
 		Field f = null;
 		try {
 			f = c.getField(fieldName);
@@ -98,6 +77,7 @@ public class ControllerNode implements JangularNode {
 	
 	public static int controllerScopeSuffix = 0;
 	
+	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass) throws Exception {
 		this.dynamicControllerScopeClass = createDynamicControllerScopeClass(controllerScopeClass, parentScopeClass);
 
@@ -112,7 +92,6 @@ public class ControllerNode implements JangularNode {
 			Class<? extends Scope> parentScopeClass) {
 		
 		ArrayList<String> fieldsInDynamicClass = new ArrayList<String>(getReferencedVariables());
-//		fieldsInDynamicClass.removeAll(getScopeProvidedVariables());
 		
 		ClassWriter cw = new ClassWriter(0);
 		FieldVisitor fv;

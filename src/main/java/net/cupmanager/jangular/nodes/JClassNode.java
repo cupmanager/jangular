@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
+import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
 
 import org.mvel2.MVEL;
@@ -20,7 +21,8 @@ public class JClassNode implements JangularNode {
 	}
 	
 	
-	public void eval(Scope scope, StringBuilder sb) {
+	@Override
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
 		Map<String, Boolean> result = (Map<String, Boolean>) MVEL.executeExpression(expression, scope);
 		for (Map.Entry<String, Boolean> entry : result.entrySet()) {
 			if (entry.getValue()) {
@@ -31,11 +33,13 @@ public class JClassNode implements JangularNode {
 	}
 
 
+	@Override
 	public Collection<String> getReferencedVariables() {
 		return pc.getInputs().keySet();
 	}
 
 
+	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass) {
 		
 	}

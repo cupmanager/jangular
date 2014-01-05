@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.cupmanager.jangular.Compiler;
+import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
 
 import org.mvel2.MVEL;
@@ -50,7 +51,8 @@ public class RepeatNode implements JangularNode {
 		this.node = node;
 	}
 	
-	public void eval(Scope scope, StringBuilder sb) {
+	@Override
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
 		try {
 			List<?> list = (List<?>)MVEL.executeExpression(listExpression, scope);
 			RepeatNodeScope nodeScope = nodeScopeClass.newInstance();
@@ -66,7 +68,7 @@ public class RepeatNode implements JangularNode {
 					}
 					
 					
-					node.eval(nodeScope, sb);
+					node.eval(nodeScope, sb, context);
 					//sb.append(nodeScope);
 					i++;
 				}
@@ -76,6 +78,7 @@ public class RepeatNode implements JangularNode {
 		}
 	}
 
+	@Override
 	public Collection<String> getReferencedVariables() {
 		Set<String> variables = new HashSet<String>();
 		variables.addAll(node.getReferencedVariables());
@@ -89,8 +92,10 @@ public class RepeatNode implements JangularNode {
 	}
 	
 	public static int repeatScopeSuffix = 0;
-	public void compileScope(Class<? extends Scope> parentScopeClass)
-			throws Exception {
+	
+	
+	@Override
+	public void compileScope(Class<? extends Scope> parentScopeClass) throws Exception {
 		
 		String className = "RepeatScope" + (repeatScopeSuffix++);
 		String parentClassName = parentScopeClass.getName().replace('.', '/');

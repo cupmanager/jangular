@@ -3,6 +3,7 @@ package net.cupmanager.jangular.nodes;
 import java.util.Collection;
 import java.util.Collections;
 
+import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
 
 public class TextNode implements JangularNode {
@@ -13,7 +14,8 @@ public class TextNode implements JangularNode {
 		this.text = text;
 	}
 
-	public void eval(Scope scope, StringBuilder sb) {
+	@Override
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
 		sb.append(text);
 	}
 
@@ -21,10 +23,12 @@ public class TextNode implements JangularNode {
 		text = text + textNode.text;
 	}
 
+	@Override
 	public Collection<String> getReferencedVariables() {
 		return Collections.emptySet();
 	}
 
+	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass) {
 
 	}

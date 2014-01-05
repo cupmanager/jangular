@@ -1,6 +1,9 @@
-package net.cupmanager.jangular;
+package net.cupmanager.jangular.expressions;
 
 import java.util.Collection;
+
+import net.cupmanager.jangular.Compiler;
+import net.cupmanager.jangular.Scope;
 
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;

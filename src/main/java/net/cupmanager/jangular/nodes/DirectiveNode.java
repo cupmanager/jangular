@@ -8,11 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.cupmanager.jangular.CompiledExpression;
+import net.cupmanager.jangular.AbstractDirective;
 import net.cupmanager.jangular.Compiler;
+import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
-import net.cupmanager.jangular.testing.AbstractDirective;
+import net.cupmanager.jangular.expressions.CompiledExpression;
 
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
@@ -90,7 +91,8 @@ public class DirectiveNode implements JangularNode {
 	}
 	
 
-	public void eval(final Scope scope, StringBuilder sb) {
+	@Override
+	public void eval(final Scope scope, StringBuilder sb, EvaluationContext context) {
 		
 		Object[] inValues = new Object[inExpressions.length];
 		for (int i = 0; i < inValues.length; i++ ) {
@@ -105,13 +107,13 @@ public class DirectiveNode implements JangularNode {
 				directiveInstance.eval(nodeScope);
 			}
 			
-			//Scope s = directiveInstance.link(isolate);
-			node.eval(nodeScope, sb);
+			node.eval(nodeScope, sb, context);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
+	@Override
 	public Collection<String> getReferencedVariables() {
 		nodeVariables = new ArrayList<String>(node.getReferencedVariables());
 		return variables;
@@ -119,6 +121,7 @@ public class DirectiveNode implements JangularNode {
 
 	public static int directiveScopeSuffix = 0;
 	
+	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass) throws Exception {
 		
 		List<String> fieldNames = null;

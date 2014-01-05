@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
 
 public class CompositeNode implements JangularNode {
@@ -25,9 +26,10 @@ public class CompositeNode implements JangularNode {
 		this(new ArrayList<JangularNode>());
 	}
 	
-	public void eval(Scope scope, StringBuilder sb) {
+	@Override
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
 		for (JangularNode node : fastnodes) {
-			node.eval(scope, sb);
+			node.eval(scope, sb, context);
 		}
 	}
 
@@ -77,6 +79,7 @@ public class CompositeNode implements JangularNode {
 		}
 	}
 
+	@Override
 	public Collection<String> getReferencedVariables() {
 		Set<String> variables = new HashSet<String>();
 		for (JangularNode node : fastnodes) {
@@ -85,6 +88,7 @@ public class CompositeNode implements JangularNode {
 		return variables;
 	}
 
+	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass) throws Exception {
 		for (JangularNode node : fastnodes) {
 			node.compileScope(parentScopeClass);

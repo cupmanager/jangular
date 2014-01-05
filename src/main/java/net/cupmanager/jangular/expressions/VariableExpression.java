@@ -1,4 +1,6 @@
-package net.cupmanager.jangular;
+package net.cupmanager.jangular.expressions;
+
+import net.cupmanager.jangular.Scope;
 
 import org.mvel2.MVEL;
 import org.mvel2.compiler.ExecutableStatement;

@@ -6,8 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.cupmanager.jangular.CompiledExpression;
+import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.expressions.CompiledExpression;
 
 public class ConditionalNode implements JangularNode {
 
@@ -28,17 +29,18 @@ public class ConditionalNode implements JangularNode {
 	}
 	
 	
-	public void eval(Scope scope, StringBuilder sb) {
+	@Override
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
 		Boolean result = (Boolean) compiledCondition.eval(scope);
 		if (result) {
-			node.eval(scope, sb);
+			node.eval(scope, sb, context);
 		} else {
 			
 			if( elseIfCompiledConditions != null ){
 				for( int i = 0; i < elseIfCompiledConditions.length; i++){
 					result = (Boolean) elseIfCompiledConditions[i].eval(scope);
 					if( result ){
-						elseIfNodes.get(i).eval(scope, sb);
+						elseIfNodes.get(i).eval(scope, sb, context);
 						return;
 					}
 				}
@@ -46,7 +48,7 @@ public class ConditionalNode implements JangularNode {
 			
 			
 			if( elseNode != null ){
-				elseNode.eval(scope, sb);
+				elseNode.eval(scope, sb, context);
 			}
 		}
 		
@@ -54,6 +56,7 @@ public class ConditionalNode implements JangularNode {
 	}
 
 
+	@Override
 	public Collection<String> getReferencedVariables() {
 		Set<String> vars = new HashSet<String>();
 		
@@ -74,6 +77,7 @@ public class ConditionalNode implements JangularNode {
 	}
 
 
+	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass) throws Exception {
 		compiledCondition = CompiledExpression.compile(condition, parentScopeClass);
 		

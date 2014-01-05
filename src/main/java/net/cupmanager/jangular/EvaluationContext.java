@@ -1,7 +1,5 @@
 package net.cupmanager.jangular;
 
-
-
-public class Scope {
+public class EvaluationContext {
 
 }

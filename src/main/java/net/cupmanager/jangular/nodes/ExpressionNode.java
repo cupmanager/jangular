@@ -2,8 +2,9 @@ package net.cupmanager.jangular.nodes;
 
 import java.util.Collection;
 
-import net.cupmanager.jangular.CompiledExpression;
+import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.expressions.CompiledExpression;
 
 public class ExpressionNode implements JangularNode {
 
@@ -14,14 +15,17 @@ public class ExpressionNode implements JangularNode {
 		this.expression = expression;;
 	}
 	
-	public void eval(Scope scope, StringBuilder sb) {
+	@Override
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
 		sb.append(compiledExpression.evalToString(scope));
 	}
 
+	@Override
 	public Collection<String> getReferencedVariables() {
 		return CompiledExpression.getReferencedVariables(expression);
 	}
 
+	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass) {
 		compiledExpression = CompiledExpression.compile(expression, parentScopeClass);
 	}

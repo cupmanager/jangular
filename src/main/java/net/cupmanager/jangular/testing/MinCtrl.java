@@ -11,6 +11,7 @@ public class MinCtrl extends AbstractController<MinCtrlScope> {
 		public String info;
 	}
 	
+	@Override
 	public void eval(MinCtrlScope scope) {
 		scope.info = url.toUpperCase();
 	}

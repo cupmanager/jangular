@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import net.cupmanager.jangular.App.AppScope;
 import net.cupmanager.jangular.nodes.CompositeNode;
 
 import org.attoparser.AttoParseException;
@@ -16,14 +15,11 @@ import org.attoparser.markup.MarkupParsingConfiguration.ElementBalancing;
 import org.xml.sax.SAXException;
 
 public class Compiler {
-	
-	
 	private DirectiveRepository directiveRepository;
 	
 	public Compiler(DirectiveRepository directiveRepository) {
 		this.directiveRepository = directiveRepository;
 	}
-	
 
 	public CompositeNode compile(InputStream html, Class<? extends Scope> scopeClass) throws ParserConfigurationException, SAXException {
 		CompositeNode n = internalCompile(html);
@@ -35,7 +31,6 @@ public class Compiler {
 		return n;
 	}
 	
-
 	CompositeNode internalCompile(InputStream html) throws ParserConfigurationException, SAXException {
 		IAttoParser parser = new MarkupAttoParser();
 		

@@ -13,7 +13,6 @@ import net.cupmanager.jangular.annotations.Template;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.DirectiveNode;
 import net.cupmanager.jangular.nodes.JangularNode;
-import net.cupmanager.jangular.testing.AbstractDirective;
 
 import org.xml.sax.SAXException;
 

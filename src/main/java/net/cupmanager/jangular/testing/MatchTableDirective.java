@@ -3,6 +3,7 @@ package net.cupmanager.jangular.testing;
 import java.util.Map;
 
 import net.cupmanager.jangular.App.Item;
+import net.cupmanager.jangular.AbstractDirective;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.Directive;
 import net.cupmanager.jangular.annotations.In;

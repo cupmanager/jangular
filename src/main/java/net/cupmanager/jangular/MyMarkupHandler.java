@@ -210,7 +210,7 @@ public class MyMarkupHandler extends AbstractStandardMarkupAttoHandler {
 	
 	
 	
-	private void parseText(String text, CompositeNode node) {
+	private static void parseText(String text, CompositeNode node) {
 		Matcher m = pattern.matcher(text);
 		
 		int start = 0;

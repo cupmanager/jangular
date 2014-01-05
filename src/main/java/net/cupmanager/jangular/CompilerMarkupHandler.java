@@ -117,6 +117,10 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 			return true;
 		} else if("j-else-if".equals(elementName)) {
 			return true;
+		} else if("j-controller".equals(elementName)) {
+			return true;
+		} else if("j-repeat".equals(elementName)) {
+			return true;
 		} else if(directiveRepository.hasDirective(elementName) ) {
 			return true;
 		}
@@ -157,6 +161,12 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 			} else {
 				throw new RuntimeException("j-else must follow directly behind an j-if");
 			}
+		} else if ("j-controller".equals(elementName)) {
+			String controllerClassName = elementMemory.attrs.get("controller");
+			node = new ControllerNode(controllerClassName, node);
+		} else if ("j-repeat".equals(elementName)) {
+			String repeatExpr = elementMemory.attrs.get("repeat");
+			node = new RepeatNode(repeatExpr, node);
 		} else {
 			
 			if (directiveRepository.hasDirective(elementName)) {

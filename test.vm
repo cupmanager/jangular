@@ -1,0 +1,17 @@
+<div>
+    <ul>
+        #foreach ($item in $items)
+            <li>
+                item: $item.title
+                #foreach ($nr in $item.nrs) <li>nr: $nr</li>#end
+            </li>
+        #end
+    </ul>
+    
+    Matches:
+    #foreach ($i in $items)
+    	#set($item = $i)
+    	#set($includeheaders = true)
+    	<b>item has $item.nrs.size() elements, $includeheaders</b>
+	#end
+</div>

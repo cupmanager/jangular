@@ -1,0 +1,60 @@
+
+<div>
+    <cm-matchtable matches="matches" headers="true">
+        <hejsan name="max">hejfamsf</hejsan>
+    </cm-matchtable>
+
+    <ul>
+        <li data-class="{active: menu=='start'}">
+            Start
+        </li>
+        <li data-repeat="item in items" 
+                class="menuitem menuitem_{{$index+1}}" 
+                data-class="{active: menu==item, notactive: menu!=item}">
+            {{item.title | i18n}}
+        </li>
+    </ul>   
+</div>
+
+
+class & data-class
+[
+    Text: class="menuitem menuitem_
+    Expr: $index+1
+    Conditional(menu==item): active
+    Conditional(menu!=item): notactive
+    Text: "
+]
+
+Text, Repeat, Directive, Conditional, Expression   implements Node
+
+interface Node {
+    public void eval(Scope scope, StringBuffer sb) {}
+}
+
+scope.newSubScope(true/false) 
+
+
+
+matchtable.java
+
+@Directive("cm-matchtable")
+@Template("matchtable.html")
+public class MatchTable {
+    public void link(scope, domelement, attrs) {
+        /*  default:  scope.* = attrs.*   */
+//      scope.put("matches", attrs.get("matches"))
+
+        scope.get("1+1") => null
+    }
+}
+
+
+matchtable.html
+<table>
+    <thead data-if="headers">
+    </thead>
+    <tr data-repeat="m in func()">
+        <td data-if="includeMatchnr">{{m.matchnr}}</td>
+    </tr>
+</table>

@@ -1,0 +1,34 @@
+<div j-controller="net.cupmanager.jangular.testing.MinCtrl">
+	<ul>
+		<li j-repeat="item in items">
+			
+			<j-if test="0 == $index % 3">
+				item 1: {{item.title}}
+				<li j-repeat="nr in item.nrs if $ % 2 == 0">
+					nr: {{nr}} {{item.nrs.size()}}  {{item.title}}
+				</li>
+			</j-if>
+			<j-else-if test="1 == $index % 3">
+				item 2: {{item.title}}
+				<li j-repeat="nr in item.nrs if $ % 2 == 1">
+					nr: {{nr}} {{item.nrs.size()}}  {{item.title}}
+				</li>
+			</j-else-if>
+			<j-else>
+				item 3: {{item.title}}
+				<li j-repeat="nr in item.nrs if $ % 2 == 1">
+					nr: {{nr}} {{item.nrs.size()}}  {{item.title}}
+				</li>
+			</j-else>
+			
+		</li>
+		
+	</ul>
+	
+	<p j-if="1<2">hej</p>
+	Matches:
+	<cm-matchtable item="i" j-repeat="i in items" includeheaders="true"></cm-matchtable>
+	
+	info: {{info}}
+</div>
+sqrt if 9 is {{Math.sqrt(9)}} 

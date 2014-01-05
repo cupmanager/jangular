@@ -3,14 +3,13 @@ package net.cupmanager.jangular.nodes;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import net.cupmanager.jangular.AbstractController;
 import net.cupmanager.jangular.Compiler;
-import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.injection.EvaluationContext;
+import net.cupmanager.jangular.injection.Injector;
 
-import org.mvel2.util.ReflectionUtil;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -32,6 +31,7 @@ public class ControllerNode implements JangularNode {
 	private Class<? extends Scope> controllerScopeClass;
 	private Class<? extends AbstractController> controllerClass;
 	private Class<? extends Scope> dynamicControllerScopeClass;
+	private Injector injector;
 	
 	
 	public ControllerNode(String controllerClassName, JangularNode node) {
@@ -50,7 +50,7 @@ public class ControllerNode implements JangularNode {
 	public void eval(final Scope parentScope, StringBuilder sb, EvaluationContext context) {
 		
 		try {
-			context.inject(controllerInstance);
+			injector.inject(controllerInstance, context);
 			Scope controllerScope = controllerScopeClass.newInstance();
 			controllerInstance.eval(controllerScope);
 			Scope nodeScope = dynamicControllerScopeClass.newInstance();
@@ -79,13 +79,17 @@ public class ControllerNode implements JangularNode {
 	public static int controllerScopeSuffix = 0;
 	
 	@Override
-	public void compileScope(Class<? extends Scope> parentScopeClass) throws Exception {
+	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass) throws Exception {
 		this.dynamicControllerScopeClass = createDynamicControllerScopeClass(controllerScopeClass, parentScopeClass);
 
-		this.node.compileScope(dynamicControllerScopeClass);
+		this.node.compileScope(dynamicControllerScopeClass, evaluationContextClass);
 		
 		Class<? extends ControllerScopeValueCopier> valueCopierClass = createValueCopierClass(dynamicControllerScopeClass, controllerScopeClass, parentScopeClass);
 		this.valueCopier = valueCopierClass.newInstance();
+		
+
+		Class<? extends Injector> injectorClass = Injector.createInjectorClass(controllerClass, evaluationContextClass);
+		this.injector = injectorClass.newInstance();
 	}
 	
 	private Class<? extends Scope> createDynamicControllerScopeClass(

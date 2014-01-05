@@ -10,10 +10,11 @@ import java.util.Set;
 
 import net.cupmanager.jangular.AbstractDirective;
 import net.cupmanager.jangular.Compiler;
-import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.expressions.CompiledExpression;
+import net.cupmanager.jangular.injection.EvaluationContext;
+import net.cupmanager.jangular.injection.Injector;
 
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
@@ -46,6 +47,7 @@ public class DirectiveNode implements JangularNode {
 	private DirectiveScopeValueCopier valueCopier;
 	private boolean hasDirectiveScope;
 	private Class<? extends Scope> directiveScopeClass;
+	private Injector injector;
 	
 	
 	public DirectiveNode(AbstractDirective directiveInstance, CompositeNode compositeNode, Map<String, String> attrs) {
@@ -104,7 +106,7 @@ public class DirectiveNode implements JangularNode {
 			valueCopier.copy(nodeScope,inValues);
 			
 			if( hasDirectiveScope ) {
-				context.inject(directiveInstance);
+				injector.inject(directiveInstance, context);
 				directiveInstance.eval(nodeScope);
 			}
 			
@@ -123,7 +125,7 @@ public class DirectiveNode implements JangularNode {
 	public static int directiveScopeSuffix = 0;
 	
 	@Override
-	public void compileScope(Class<? extends Scope> parentScopeClass) throws Exception {
+	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass) throws Exception {
 		
 		List<String> fieldNames = null;
 		List<Class<?>> fieldTypes = null;
@@ -144,14 +146,18 @@ public class DirectiveNode implements JangularNode {
 		}
 		
 		
-		this.node.compileScope(directiveScopeClass);
+		this.node.compileScope(directiveScopeClass, evaluationContextClass);
 		
 		Class<? extends DirectiveScopeValueCopier> valueCopierClass = createValueCopierClass(directiveScopeClass,fieldNames,fieldTypes);
 		this.valueCopier = valueCopierClass.newInstance();
+		
+		
+		Class<? extends Injector> injectorClass = Injector.createInjectorClass(directiveInstance.getClass(), evaluationContextClass);
+		this.injector = injectorClass.newInstance();
 	}
 	
+	
 	private Class<? extends Scope> createDirectiveScopeClass() {
-		
 		ClassWriter cw = new ClassWriter(0);
 		FieldVisitor fv;
 		MethodVisitor mv;

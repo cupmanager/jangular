@@ -1,12 +1,8 @@
 package net.cupmanager.jangular;
 
-import java.io.FileInputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.cupmanager.jangular.App.Item;
-import net.cupmanager.jangular.nodes.JangularNode;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;

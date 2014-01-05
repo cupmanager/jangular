@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import net.cupmanager.jangular.Compiler;
-import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.injection.EvaluationContext;
 
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
@@ -95,7 +95,7 @@ public class RepeatNode implements JangularNode {
 	
 	
 	@Override
-	public void compileScope(Class<? extends Scope> parentScopeClass) throws Exception {
+	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass) throws Exception {
 		
 		String className = "RepeatScope" + (repeatScopeSuffix++);
 		String parentClassName = parentScopeClass.getName().replace('.', '/');
@@ -191,7 +191,7 @@ public class RepeatNode implements JangularNode {
 		
 		
 		
-		node.compileScope(cl);
+		node.compileScope(cl, evaluationContextClass);
 	}
 
 }

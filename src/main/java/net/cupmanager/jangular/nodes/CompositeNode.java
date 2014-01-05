@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.injection.EvaluationContext;
 
 public class CompositeNode implements JangularNode {
 	
@@ -89,9 +89,9 @@ public class CompositeNode implements JangularNode {
 	}
 
 	@Override
-	public void compileScope(Class<? extends Scope> parentScopeClass) throws Exception {
+	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass) throws Exception {
 		for (JangularNode node : fastnodes) {
-			node.compileScope(parentScopeClass);
+			node.compileScope(parentScopeClass, evaluationContextClass);
 		}
 	}
 

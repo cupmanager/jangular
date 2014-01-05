@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.cupmanager.jangular.annotations.Provides;
+import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.JangularNode;
 import net.cupmanager.jangular.testing.MatchTableDirective;
 
@@ -17,6 +19,14 @@ public class App {
 		public Object items;
 	}
 	
+	
+	public static class AppEvalContext extends EvaluationContext {
+		public @Provides("Greeting") String greeting;
+		public @Provides("URL") String URL;
+		public @Provides String defaultString = "default string";
+		
+	}
+	
     public static void main( String[] args )
     {
     	DirectiveRepository repo = new DirectiveRepository();
@@ -26,7 +36,8 @@ public class App {
         
         try {
         	long start = System.currentTimeMillis();
-			JangularNode node = compiler.compile(new FileInputStream("test.html"),AppScope.class);
+			JangularNode node = compiler.compile(new FileInputStream("test.html"), AppScope.class, AppEvalContext.class);
+			
 			long end = System.currentTimeMillis();
 			System.out.println("Compile took " + (end-start) + " ms");
 			
@@ -50,19 +61,17 @@ public class App {
 			scope.items = _items;
 			StringBuilder sb = new StringBuilder();
 			
-			EvaluationContext context = new EvaluationContext();
-			context.add(String.class, "Greeting", "Hejsan");
-			context.add(String.class, "URL", "http://localhost/whatever");
-			context.add(String.class, "default string");
+			AppEvalContext context = new AppEvalContext();
+			context.greeting = "Hejsan";
+			context.URL = "http://localhost/wahatever";
 			
-			
-			for( int i = 0; i < 500; i++ ) {
+			for( int i = 0; i < 1000; i++ ) {
 				sb = new StringBuilder();
 				node.eval(scope, sb, context);
 			}
 			
 			start = System.currentTimeMillis();
-			int times = 100;
+			int times = 1000;
 			for( int i = 0; i < times; i++ ) {
 				sb = new StringBuilder();
 				node.eval(scope, sb, context);

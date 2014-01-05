@@ -6,7 +6,7 @@ import net.cupmanager.jangular.annotations.Inject;
 import net.cupmanager.jangular.testing.MinCtrl.MinCtrlScope;
 
 public class MinCtrl extends AbstractController<MinCtrlScope> {
-	@Inject("URL") String url = "http://localhost/stuff";
+	public @Inject("URL") String url = "http://localhost/stuff";
 	
 	public static class MinCtrlScope extends Scope {
 		public String info;

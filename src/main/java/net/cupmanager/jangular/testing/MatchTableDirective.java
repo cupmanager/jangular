@@ -16,7 +16,7 @@ import net.cupmanager.jangular.testing.MatchTableDirective.MatchTableScope;
 @Template("matchtable.html")
 public class MatchTableDirective extends AbstractDirective<MatchTableScope> {
 	
-	@Inject String hej;
+	public @Inject String hej;
 	
 	public static class MatchTableScope extends Scope {
 		@In public Item item;

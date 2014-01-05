@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.expressions.CompiledExpression;
+import net.cupmanager.jangular.injection.EvaluationContext;
 
 public class ConditionalNode implements JangularNode {
 
@@ -78,21 +78,21 @@ public class ConditionalNode implements JangularNode {
 
 
 	@Override
-	public void compileScope(Class<? extends Scope> parentScopeClass) throws Exception {
+	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass) throws Exception {
 		compiledCondition = CompiledExpression.compile(condition, parentScopeClass);
 		
 		if( elseIfNodes != null){
 			elseIfCompiledConditions = new CompiledExpression[elseIfConditions.size()];
 			for(int i = 0; i < elseIfConditions.size(); i++){
 				elseIfCompiledConditions[i] = CompiledExpression.compile(elseIfConditions.get(i), parentScopeClass);
-				elseIfNodes.get(i).compileScope(parentScopeClass);
+				elseIfNodes.get(i).compileScope(parentScopeClass, evaluationContextClass);
 			}
 			
 		}
 		
-		node.compileScope(parentScopeClass);
+		node.compileScope(parentScopeClass, evaluationContextClass);
 		if (elseNode != null) {
-			elseNode.compileScope(parentScopeClass);
+			elseNode.compileScope(parentScopeClass, evaluationContextClass);
 		}
 	}
 

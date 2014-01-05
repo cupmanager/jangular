@@ -7,7 +7,6 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import net.cupmanager.jangular.App.AppScope;
 import net.cupmanager.jangular.annotations.Directive;
 import net.cupmanager.jangular.annotations.Template;
 import net.cupmanager.jangular.nodes.CompositeNode;

@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.CompositeNode;
 
 import org.attoparser.AttoParseException;
@@ -21,10 +22,11 @@ public class Compiler {
 		this.directiveRepository = directiveRepository;
 	}
 
-	public CompositeNode compile(InputStream html, Class<? extends Scope> scopeClass) throws ParserConfigurationException, SAXException {
+	public CompositeNode compile(InputStream html, Class<? extends Scope> scopeClass, Class<? extends EvaluationContext> evaluationContextClass) 
+			throws ParserConfigurationException, SAXException {
 		CompositeNode n = internalCompile(html);
 		try {
-			n.compileScope(scopeClass);
+			n.compileScope(scopeClass, evaluationContextClass);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -37,7 +39,7 @@ public class Compiler {
 		MarkupParsingConfiguration conf = new MarkupParsingConfiguration();
 		conf.setElementBalancing(ElementBalancing.REQUIRE_BALANCED);
 
-		MyMarkupHandler handler = new MyMarkupHandler(conf, directiveRepository);
+		CompilerMarkupHandler handler = new CompilerMarkupHandler(conf, directiveRepository);
 		
 		try {
 			parser.parse(new InputStreamReader(html), handler);

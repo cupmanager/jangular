@@ -2,9 +2,9 @@ package net.cupmanager.jangular.nodes;
 
 import java.util.Collection;
 
-import net.cupmanager.jangular.EvaluationContext;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.expressions.CompiledExpression;
+import net.cupmanager.jangular.injection.EvaluationContext;
 
 public class ExpressionNode implements JangularNode {
 
@@ -26,7 +26,7 @@ public class ExpressionNode implements JangularNode {
 	}
 
 	@Override
-	public void compileScope(Class<? extends Scope> parentScopeClass) {
+	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass) {
 		compiledExpression = CompiledExpression.compile(expression, parentScopeClass);
 	}
 

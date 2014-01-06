@@ -25,7 +25,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class DirectiveNode implements JangularNode {
+public class DirectiveNode extends JangularNode {
 	
 	public static abstract class DirectiveScopeValueCopier {
 		public void copy(Scope scope, Object[] data) {

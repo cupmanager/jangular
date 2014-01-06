@@ -7,7 +7,7 @@ import net.cupmanager.jangular.JangularCompiler;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
-public class TextNode implements JangularNode {
+public class TextNode extends JangularNode {
 
 	private String text;
 

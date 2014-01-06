@@ -3,6 +3,7 @@ package net.cupmanager.jangular.testing;
 import java.util.List;
 
 import net.cupmanager.jangular.AbstractController;
+import net.cupmanager.jangular.App.Item;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.annotations.Inject;
@@ -13,7 +14,7 @@ public class MinCtrl extends AbstractController<MinCtrlScope> {
 	
 	public static class MinCtrlScope extends Scope {
 		public String info;
-		public @In List items;
+		public @In List<Item> items;
 		public @In int i;
 	}
 	

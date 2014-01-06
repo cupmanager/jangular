@@ -18,7 +18,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class RepeatNode implements JangularNode {
+public class RepeatNode extends JangularNode {
 	
 	public static class RepeatNodeScope extends Scope {
 		public void iterate(Scope parent, int i, Object object){}
@@ -34,6 +34,8 @@ public class RepeatNode implements JangularNode {
 	//private Method setMethod;
 //	private RepeatNodeScope nodeScope;
 	private Class<? extends RepeatNodeScope> nodeScopeClass;
+	private String listExpressionString;
+	private String listVarName;
 
 	public RepeatNode(String varName, Serializable listExpression, JangularNode node) {
 		this.varName = varName;
@@ -45,8 +47,17 @@ public class RepeatNode implements JangularNode {
 		String[] parts = expression.split(" in ");
 		this.varName = parts[0].trim();
 		
-		this.pc = ParserContext.create().withInput(varName, Iterable.class);
-		this.listExpression = MVEL.compileExpression("($ in " + parts[1]+")", pc);
+		this.listExpressionString = parts[1];
+		
+		int indexOfIf = listExpressionString.indexOf(" if ");
+		if (indexOfIf > -1) {
+			this.listVarName = listExpressionString.substring(0, indexOfIf);
+			listExpressionString = "($ in " + listExpressionString + ")";
+		} else {
+			this.listVarName = listExpressionString;
+		}
+		listExpressionString = listExpressionString.replace(listVarName, "this."+listVarName);
+		
 		
 		this.node = node;
 	}
@@ -83,7 +94,7 @@ public class RepeatNode implements JangularNode {
 		Set<String> variables = new HashSet<String>();
 		variables.addAll(node.getReferencedVariables());
 		
-		variables.addAll(pc.getInputs().keySet());
+//		variables.addAll(pc.getInputs().keySet());
 		variables.remove("$index");
 		variables.remove(varName);
 		variables.remove("$");
@@ -98,6 +109,15 @@ public class RepeatNode implements JangularNode {
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
 			Class<? extends EvaluationContext> evaluationContextClass,
 			JangularCompiler compiler) throws Exception {
+		
+		
+		this.pc = ParserContext.create().withInput(varName, Iterable.class);
+		pc.setStrictTypeEnforcement(true);
+		pc.addInput("this", parentScopeClass);
+		this.listExpression = MVEL.compileExpression("" + listExpressionString , pc);
+		
+		Class<?> varType = MVEL.analyze("this." + listVarName + ".get(0)", pc);
+		
 		String className = "RepeatScope" + (repeatScopeSuffix++);
 		String parentClassName = parentScopeClass.getName().replace('.', '/');
 		
@@ -109,8 +129,10 @@ public class RepeatNode implements JangularNode {
 
 		fv = cw.visitField(Opcodes.ACC_PUBLIC, "$index", "I", null, null);
 		fv.visitEnd();
-		fv = cw.visitField(Opcodes.ACC_PUBLIC, varName, "Ljava/lang/Object;", null, null);
+		
+		fv = cw.visitField(Opcodes.ACC_PUBLIC, varName, Type.getDescriptor(varType), null, null);
 		fv.visitEnd();
+		
 		for (String field : getReferencedVariables()) {
 			Type type = Type.getType(parentScopeClass.getField(field).getType());
 			fv = cw.visitField(Opcodes.ACC_PUBLIC, field, type.getDescriptor(), null, null);
@@ -146,7 +168,8 @@ public class RepeatNode implements JangularNode {
 		mv.visitFieldInsn(Opcodes.PUTFIELD, className, "$index", "I");
 		mv.visitVarInsn(Opcodes.ALOAD, 0);
 		mv.visitVarInsn(Opcodes.ALOAD, 3);
-		mv.visitFieldInsn(Opcodes.PUTFIELD, className, varName, "Ljava/lang/Object;");
+		mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(varType));
+		mv.visitFieldInsn(Opcodes.PUTFIELD, className, varName, Type.getDescriptor(varType));
 		mv.visitInsn(Opcodes.RETURN);
 		mv.visitMaxs(2, 5);
 		mv.visitEnd();
@@ -162,7 +185,8 @@ public class RepeatNode implements JangularNode {
 		mv.visitFieldInsn(Opcodes.PUTFIELD, className, "$index", "I");
 		mv.visitVarInsn(Opcodes.ALOAD, 0);
 		mv.visitVarInsn(Opcodes.ALOAD, 2);
-		mv.visitFieldInsn(Opcodes.PUTFIELD, className, varName, "Ljava/lang/Object;");
+		mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(varType));
+		mv.visitFieldInsn(Opcodes.PUTFIELD, className, varName, Type.getDescriptor(varType));
 		mv.visitInsn(Opcodes.RETURN);
 		mv.visitMaxs(2, 3);
 		mv.visitEnd();

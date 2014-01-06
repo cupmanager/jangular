@@ -7,7 +7,7 @@ import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.expressions.CompiledExpression;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
-public class ExpressionNode implements JangularNode {
+public class ExpressionNode extends JangularNode {
 
 	private String expression;
 	private CompiledExpression compiledExpression;

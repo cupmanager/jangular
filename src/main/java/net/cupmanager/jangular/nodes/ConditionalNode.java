@@ -11,7 +11,7 @@ import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.expressions.CompiledExpression;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
-public class ConditionalNode implements JangularNode {
+public class ConditionalNode extends JangularNode {
 
 	private String condition;
 	private CompiledExpression compiledCondition;

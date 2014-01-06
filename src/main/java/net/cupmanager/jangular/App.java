@@ -16,7 +16,7 @@ public class App {
 	}
 	
 	public static class AppScope extends Scope {
-		public Object items;
+		public List<Item> items;
 		public int i = 5;
 	}
 	

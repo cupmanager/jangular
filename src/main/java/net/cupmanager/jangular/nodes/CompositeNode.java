@@ -11,7 +11,7 @@ import net.cupmanager.jangular.JangularCompiler;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
-public class CompositeNode implements JangularNode {
+public class CompositeNode extends JangularNode {
 	
 	private List<JangularNode> nodes;
 	private JangularNode[] fastnodes;
@@ -29,8 +29,15 @@ public class CompositeNode implements JangularNode {
 	
 	@Override
 	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
-		for (JangularNode node : fastnodes) {
-			node.eval(scope, sb, context);
+//		for (JangularNode node : fastnodes) {
+//			node.eval(scope, sb, context);
+//		}
+		JangularNode[] f = fastnodes;
+		int i=0; 
+		int nr = f.length;
+		while (i<nr) {
+			f[i].eval(scope, sb, context);
+			i++;
 		}
 	}
 

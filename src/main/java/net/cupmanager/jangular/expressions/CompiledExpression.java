@@ -39,8 +39,12 @@ public abstract class CompiledExpression {
 			return new ConstantExpression(value);
 		}
 		
-		if( expression.matches("([a-zA-z_][a-zA-z0-9_]*)") ) {
-			return generateByteCode(scopeClass, expression);
+		if( expression.matches("([a-zA-z_][a-zA-z0-9_\\.]*)") ) {
+			try {
+				return generateByteCode(scopeClass, expression);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return new VariableExpression(compiledExpression);
@@ -48,28 +52,24 @@ public abstract class CompiledExpression {
 	
 	private static int compiledExpressionSuffix = 0;
 	
-	private static CompiledExpression generateByteCode(Class<? extends Scope> scopeClass, String varName){
+
+	private static CompiledExpression generateByteCode(Class<? extends Scope> scopeClass, String expression) throws NoSuchFieldException, SecurityException{
 		
-		String className = "CompiledExpression_" + scopeClass.getSimpleName() + (compiledExpressionSuffix++);
-		String parentClassName = scopeClass.getName().replace('.', '/');
-		Class<?> varType = null;
+		String className = "CompiledExpression_" + scopeClass.getSimpleName() + "_" + (compiledExpressionSuffix++);
+		String parentClassName = Type.getInternalName(scopeClass);
 		
-		try {
-			varType = scopeClass.getField(varName).getType();
-		} catch (NoSuchFieldException e) {
-			throw new RuntimeException(e);
-		}
+		String[] parts = expression.split("\\.");
 		
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
-
-		cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className, null, CompiledExpression.class.getName().replace('.', '/'), null);
-
+	
+		cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className, null, Type.getInternalName(CompiledExpression.class), null);
+	
 		// CONSTRUCTOR
 		mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
 		mv.visitCode();
 		mv.visitVarInsn(Opcodes.ALOAD, 0);
-		mv.visitMethodInsn(Opcodes.INVOKESPECIAL, CompiledExpression.class.getName().replace('.', '/'), "<init>", "()V");
+		mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(CompiledExpression.class), "<init>", "()V");
 		mv.visitInsn(Opcodes.RETURN);
 		mv.visitMaxs(1, 1);
 		mv.visitEnd();
@@ -79,8 +79,13 @@ public abstract class CompiledExpression {
 		mv.visitCode();
 		mv.visitVarInsn(Opcodes.ALOAD, 1);
 		mv.visitTypeInsn(Opcodes.CHECKCAST, parentClassName);
-		mv.visitFieldInsn(Opcodes.GETFIELD, parentClassName, varName, Type.getDescriptor(varType));
-		box(varType, mv);
+		Class<?> lastType = scopeClass;
+		for (String part : parts) {
+			Class<?> type = lastType.getField(part).getType();
+			mv.visitFieldInsn(Opcodes.GETFIELD, Type.getInternalName(lastType), part, Type.getDescriptor(type));
+			lastType = type;
+		}
+		box(lastType, mv);
 		mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
 		mv.visitInsn(Opcodes.ARETURN);
 		mv.visitMaxs(2, 3);
@@ -93,15 +98,20 @@ public abstract class CompiledExpression {
 		mv.visitCode();
 		mv.visitVarInsn(Opcodes.ALOAD, 1);
 		mv.visitTypeInsn(Opcodes.CHECKCAST, parentClassName);
-		mv.visitFieldInsn(Opcodes.GETFIELD, parentClassName, varName, Type.getDescriptor(varType));
-		box(varType, mv);
+		lastType = scopeClass;
+		for (String part : parts) {
+			Class<?> type = lastType.getField(part).getType();
+			mv.visitFieldInsn(Opcodes.GETFIELD, Type.getInternalName(lastType), part, Type.getDescriptor(type));
+			lastType = type;
+		}
+		box(lastType, mv);
 		mv.visitInsn(Opcodes.ARETURN);
 		mv.visitMaxs(2, 3);
 		mv.visitEnd();
 	
 		cw.visitEnd();
 		
-				
+		
 		Class<? extends CompiledExpression> cl = JangularCompiler.loadScopeClass(cw.toByteArray(), className);
 		
 		try {

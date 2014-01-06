@@ -11,7 +11,7 @@ import net.cupmanager.jangular.injection.EvaluationContext;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 
-public class JClassNode implements JangularNode {
+public class JClassNode extends JangularNode {
 
 	private Serializable expression;
 	private ParserContext pc;

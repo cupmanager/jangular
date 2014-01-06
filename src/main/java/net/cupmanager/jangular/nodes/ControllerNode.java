@@ -22,7 +22,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class ControllerNode implements JangularNode {
+public class ControllerNode extends JangularNode {
 	
 	public static abstract class ControllerScopeValueCopier {
 		public void copy(Scope targetScope, /*Scope controllerScope,*/ Scope parentScope) {
@@ -161,7 +161,7 @@ public class ControllerNode implements JangularNode {
 				// The field already exists in the controllerScope
 				// Just make sure that it is availiable if necessary
 				
-				Class fieldType = controllerField.getType();
+				Class<?> fieldType = controllerField.getType();
 				fieldType = ClassUtils.primitiveToWrapper(fieldType);
 				
 				if( controllerField.getAnnotation(In.class) != null ){
@@ -176,7 +176,7 @@ public class ControllerNode implements JangularNode {
 					compiler.assertCasts(controllerField, parentField);
 				} 
 			} else {
-				Class fieldType = parentField.getType();
+				Class<?> fieldType = parentField.getType();
 				
 				fv = cw.visitField(Opcodes.ACC_PUBLIC, fieldName, Type.getDescriptor(fieldType), null, null);
 				fv.visitEnd();

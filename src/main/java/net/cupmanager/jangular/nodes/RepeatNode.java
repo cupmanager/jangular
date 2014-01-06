@@ -6,8 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.cupmanager.jangular.JangularCompiler;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.compiler.CompilerSession;
+import net.cupmanager.jangular.compiler.JangularCompilerUtils;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
 import org.mvel2.MVEL;
@@ -108,7 +109,7 @@ public class RepeatNode extends JangularNode {
 	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
 			Class<? extends EvaluationContext> evaluationContextClass,
-			JangularCompiler compiler) throws Exception {
+			CompilerSession session) throws Exception {
 		
 		
 		this.pc = ParserContext.create().withInput(varName, Iterable.class);
@@ -208,14 +209,14 @@ public class RepeatNode extends JangularNode {
 		}
 		 */
 		
-		Class<? extends RepeatNodeScope> cl = JangularCompiler.loadScopeClass(cw.toByteArray(), className);
+		Class<? extends RepeatNodeScope> cl = JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
 		
 		//this.setMethod = cl.getMethod("set", parentScopeClass, int.class, Object.class);
 //		this.nodeScope = cl.newInstance();
 		this.nodeScopeClass = cl;
 		
 		
-		node.compileScope(cl, evaluationContextClass, compiler);
+		node.compileScope(cl, evaluationContextClass, session);
 	}
 
 }

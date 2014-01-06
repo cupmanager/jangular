@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
-import net.cupmanager.jangular.JangularCompiler;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
 import org.mvel2.MVEL;
@@ -43,7 +43,7 @@ public class JClassNode extends JangularNode {
 	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
 			Class<? extends EvaluationContext> evaluationContextClass,
-			JangularCompiler compiler) {
+			CompilerSession session) {
 		
 	}
 

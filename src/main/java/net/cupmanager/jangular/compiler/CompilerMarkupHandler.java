@@ -1,4 +1,4 @@
-package net.cupmanager.jangular;
+package net.cupmanager.jangular.compiler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.cupmanager.jangular.DirectiveRepository;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.ConditionalNode;
 import net.cupmanager.jangular.nodes.ControllerNode;
@@ -48,14 +49,17 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 	}
 	
 	
-	private static Pattern pattern = Pattern.compile("\\{\\{(.*?)\\}\\}");
+	/* Find expressions like {{......}} */
+	private static Pattern expressionPattern = Pattern.compile("\\{\\{(.*?)\\}\\}");
 
 	private Stack<CompositeNode> stack = new Stack<CompositeNode>();
 	private Stack<ElementMemory> attrStack = new Stack<ElementMemory>();
 	private DirectiveRepository directiveRepository;
+	private JangularCompiler compiler;
 	
-	public CompilerMarkupHandler(MarkupParsingConfiguration conf, DirectiveRepository directiveRepository) {
+	public CompilerMarkupHandler(JangularCompiler compiler, MarkupParsingConfiguration conf, DirectiveRepository directiveRepository) {
 		super(conf);
+		this.compiler = compiler;
 		this.directiveRepository = directiveRepository;
 		stack.push(new CompositeNode());
 	}
@@ -165,13 +169,13 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 			String controllerClassName = elementMemory.attrs.get("controller");
 			node = new ControllerNode(controllerClassName, node);
 		} else if ("j-repeat".equals(elementName)) {
-			String repeatExpr = elementMemory.attrs.get("repeat");
+			String repeatExpr = elementMemory.attrs.get("for");
 			node = new RepeatNode(repeatExpr, node);
 		} else {
 			
 			if (directiveRepository.hasDirective(elementName)) {
 				Map<String,String> attributesObject = elementMemory.attrs;
-				node = directiveRepository.getDirectiveNode(elementName, attributesObject, node);
+				node = compiler.getDirectiveNode(elementName, attributesObject, node);
 			}
 			
 			if (elementMemory.isController()) {
@@ -221,7 +225,7 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 	
 	
 	private static void parseText(String text, CompositeNode node) {
-		Matcher m = pattern.matcher(text);
+		Matcher m = expressionPattern.matcher(text);
 		
 		int start = 0;
 		

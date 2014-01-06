@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import net.cupmanager.jangular.JangularCompiler;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
 public class CompositeNode extends JangularNode {
@@ -16,9 +16,6 @@ public class CompositeNode extends JangularNode {
 	private List<JangularNode> nodes;
 	private JangularNode[] fastnodes;
 	
-	private int contentStartIndex = -1;
-	private int contentEndIndex = -1;
-
 	public CompositeNode(List<JangularNode> nodes) {
 		this.nodes = nodes;
 	}
@@ -29,15 +26,8 @@ public class CompositeNode extends JangularNode {
 	
 	@Override
 	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
-//		for (JangularNode node : fastnodes) {
-//			node.eval(scope, sb, context);
-//		}
-		JangularNode[] f = fastnodes;
-		int i=0; 
-		int nr = f.length;
-		while (i<nr) {
-			f[i].eval(scope, sb, context);
-			i++;
+		for (JangularNode node : fastnodes) {
+			node.eval(scope, sb, context);
 		}
 	}
 
@@ -99,9 +89,9 @@ public class CompositeNode extends JangularNode {
 	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
 			Class<? extends EvaluationContext> evaluationContextClass, 
-			JangularCompiler compiler) throws Exception {
+			CompilerSession session) throws Exception {
 		for (JangularNode node : fastnodes) {
-			node.compileScope(parentScopeClass, evaluationContextClass, compiler);
+			node.compileScope(parentScopeClass, evaluationContextClass, session);
 		}
 	}
 

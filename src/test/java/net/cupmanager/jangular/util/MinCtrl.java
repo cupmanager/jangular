@@ -1,13 +1,13 @@
-package net.cupmanager.jangular.testing;
+package net.cupmanager.jangular.util;
 
 import java.util.List;
 
 import net.cupmanager.jangular.AbstractController;
-import net.cupmanager.jangular.App.Item;
+import net.cupmanager.jangular.LargeTest.Item;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.annotations.Inject;
-import net.cupmanager.jangular.testing.MinCtrl.MinCtrlScope;
+import net.cupmanager.jangular.util.MinCtrl.MinCtrlScope;
 
 public class MinCtrl extends AbstractController<MinCtrlScope> {
 	public @Inject("URL") String url = "http://localhost/stuff";

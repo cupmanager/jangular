@@ -2,8 +2,9 @@ package net.cupmanager.jangular.expressions;
 
 import java.util.Collection;
 
-import net.cupmanager.jangular.JangularCompiler;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.compiler.CompilerSession;
+import net.cupmanager.jangular.compiler.JangularCompilerUtils;
 
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
@@ -26,7 +27,7 @@ public abstract class CompiledExpression {
 		return pc.getInputs().keySet();
 	}
 	
-	public static CompiledExpression compile(String expression, Class<? extends Scope> scopeClass){
+	public static CompiledExpression compile(String expression, Class<? extends Scope> scopeClass, CompilerSession session){
 		
 		ParserContext pc = new ParserContext();
 		
@@ -43,7 +44,8 @@ public abstract class CompiledExpression {
 			try {
 				return generateByteCode(scopeClass, expression);
 			} catch (Exception e) {
-				e.printStackTrace();
+				// Maybe some problem with types. That's okay, let MVEL handle it.
+				session.warn("CompiledExpression couldn't generate bytecode-class for expression \"\". " + e.getMessage());
 			}
 		}
 		
@@ -112,7 +114,7 @@ public abstract class CompiledExpression {
 		cw.visitEnd();
 		
 		
-		Class<? extends CompiledExpression> cl = JangularCompiler.loadScopeClass(cw.toByteArray(), className);
+		Class<? extends CompiledExpression> cl = JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
 		
 		try {
 			return cl.newInstance();

@@ -1,13 +1,40 @@
-package net.cupmanager.jangular;
+package net.cupmanager.jangular.compiler;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class JangularUtils {
+public class JangularCompilerUtils {
 	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> loadScopeClass(byte[] b, String className) {
+		Class<T> clazz = null;
+		try {
+			ClassLoader loader = ClassLoader.getSystemClassLoader();
+			
+			Class<ClassLoader> cls = (Class<ClassLoader>) Class.forName("java.lang.ClassLoader");
+			Method method = cls.getDeclaredMethod(
+					"defineClass", new Class[] { String.class, byte[].class,
+							int.class, int.class });
+
+			
+			method.setAccessible(true);
+			try {
+				Object[] args = new Object[] { className, b, new Integer(0),
+						new Integer(b.length) };
+				clazz = ((Class<T>) method.invoke(loader, args));
+			} finally {
+				method.setAccessible(false);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return (Class<T>) clazz;
+	}
 	
 	public static void checkcast(Field toField, Field fromField, MethodVisitor mv) {
 		checkcast(toField.getType(), fromField.getType(), mv);

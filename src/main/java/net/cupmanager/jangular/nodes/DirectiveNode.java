@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.Set;
 
 import net.cupmanager.jangular.AbstractDirective;
-import net.cupmanager.jangular.JangularCompiler;
-import net.cupmanager.jangular.JangularUtils;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
+import net.cupmanager.jangular.compiler.CompilerSession;
+import net.cupmanager.jangular.compiler.JangularCompilerUtils;
 import net.cupmanager.jangular.expressions.CompiledExpression;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.injection.Injector;
@@ -51,7 +51,7 @@ public class DirectiveNode extends JangularNode {
 	private Injector injector;
 	
 	
-	public DirectiveNode(AbstractDirective directiveInstance, CompositeNode compositeNode, Map<String, String> attrs) {
+	public DirectiveNode(AbstractDirective<?> directiveInstance, CompositeNode compositeNode, Map<String, String> attrs) {
 		this.directiveInstance = directiveInstance;
 		this.node = compositeNode;
 		
@@ -128,7 +128,7 @@ public class DirectiveNode extends JangularNode {
 	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
 			Class<? extends EvaluationContext> evaluationContextClass,
-			JangularCompiler compiler) throws Exception {
+			CompilerSession session) throws Exception {
 
 		List<String> fieldNames = null;
 		List<Class<?>> fieldTypes = null;
@@ -145,10 +145,10 @@ public class DirectiveNode extends JangularNode {
 		
 		inExpressions = new CompiledExpression[fieldNames.size()];
 		for( int i = 0; i < fieldNames.size(); i++ ){
-			inExpressions[i] = CompiledExpression.compile(attrs.get(fieldNames.get(i)), parentScopeClass);
+			inExpressions[i] = CompiledExpression.compile(attrs.get(fieldNames.get(i)), parentScopeClass, session);
 		}
 		
-		this.node.compileScope(directiveScopeClass, evaluationContextClass, compiler);
+		this.node.compileScope(directiveScopeClass, evaluationContextClass, session);
 		
 		Class<? extends DirectiveScopeValueCopier> valueCopierClass = createValueCopierClass(directiveScopeClass,fieldNames,fieldTypes);
 		this.valueCopier = valueCopierClass.newInstance();
@@ -187,11 +187,9 @@ public class DirectiveNode extends JangularNode {
 		mv.visitMaxs(1, 1);
 		mv.visitEnd();
 		
-		
-		
 		cw.visitEnd();
 		
-		return JangularCompiler.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
 	}
 	
 	private Class<? extends DirectiveScopeValueCopier> createValueCopierClass(Class<? extends Scope> targetScopeClass, List<String> fieldNames, List<Class<?>> fieldTypes){
@@ -234,7 +232,7 @@ public class DirectiveNode extends JangularNode {
 			mv.visitIntInsn(Opcodes.BIPUSH, i);
 			mv.visitInsn(Opcodes.AALOAD);
 			if( fieldTypes != null ){
-				JangularUtils.checkcast(fieldTypes.get(0), Object.class, mv);
+				JangularCompilerUtils.checkcast(fieldTypes.get(0), Object.class, mv);
 				mv.visitFieldInsn(Opcodes.PUTFIELD, targetScopeClass.getName().replace('.', '/'), fieldNames.get(i),
 						Type.getDescriptor(fieldTypes.get(i)));
 			} else {
@@ -250,51 +248,7 @@ public class DirectiveNode extends JangularNode {
 		
 		cw.visitEnd();
 		
-		return JangularCompiler.loadScopeClass(cw.toByteArray(), className);
-	}
-
-	private static void unbox(Class<?> fieldType, MethodVisitor mv) {
-		Type type = Type.getType(fieldType);
-		switch (type.getSort()) {
-		case Type.BOOLEAN:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Boolean");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z");
-			break;
-		case Type.BYTE:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Byte");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Byte", "byteValue", "()B");
-			break;
-		case Type.CHAR:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Character");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C");
-			break;
-		case Type.SHORT:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Short");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Short", "shortValue", "()S");
-			break;
-		case Type.INT:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Integer");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I");
-			break;
-		case Type.FLOAT:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Float");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Float", "floatValue", "()F");
-			break;
-		case Type.LONG:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Long");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J");
-			break;
-		case Type.DOUBLE:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Double");
-			mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D");
-			break;
-		case Type.ARRAY:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, type.getDescriptor());
-			break;
-		case Type.OBJECT:
-			mv.visitTypeInsn(Opcodes.CHECKCAST, type.getInternalName());
-			break;
-		}
+		return JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
 	}
 
 }

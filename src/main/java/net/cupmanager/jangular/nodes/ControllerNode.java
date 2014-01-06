@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Set;
 
 import net.cupmanager.jangular.AbstractController;
-import net.cupmanager.jangular.JangularCompiler;
-import net.cupmanager.jangular.JangularUtils;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
+import net.cupmanager.jangular.compiler.CompilerSession;
+import net.cupmanager.jangular.compiler.JangularCompilerUtils;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.injection.Injector;
 
@@ -35,14 +35,15 @@ public class ControllerNode extends JangularNode {
 	
 	private ControllerScopeValueCopier valueCopier;
 	private Class<? extends Scope> controllerScopeClass;
-	private Class<? extends AbstractController> controllerClass;
+	private Class<? extends AbstractController<?>> controllerClass;
 	private Class<? extends Scope> dynamicControllerScopeClass;
 	private Injector injector;
 	
 	
+	@SuppressWarnings("unchecked") 
 	public ControllerNode(String controllerClassName, JangularNode node) {
 		try {
-			this.controllerClass = (Class<? extends AbstractController>) Class.forName(controllerClassName);
+			this.controllerClass = (Class<? extends AbstractController<?>>) Class.forName(controllerClassName);
 			this.node = node;
 			//this.controllerInstance = controllerClass.newInstance();
 			this.controllerScopeClass = AbstractController.getScopeClass(controllerClass);
@@ -121,11 +122,11 @@ public class ControllerNode extends JangularNode {
 	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
 			Class<? extends EvaluationContext> evaluationContextClass,
-			JangularCompiler compiler) throws Exception {
-		this.dynamicControllerScopeClass = createDynamicControllerScopeClass(controllerScopeClass, parentScopeClass, compiler);
+			CompilerSession session) throws Exception {
+		this.dynamicControllerScopeClass = createDynamicControllerScopeClass(controllerScopeClass, parentScopeClass, session);
 
 		
-		this.node.compileScope(dynamicControllerScopeClass, evaluationContextClass, compiler);
+		this.node.compileScope(dynamicControllerScopeClass, evaluationContextClass, session);
 		
 		Class<? extends ControllerScopeValueCopier> valueCopierClass = 
 				createValueCopierClass(getReferencedVariables(),dynamicControllerScopeClass, parentScopeClass);
@@ -139,7 +140,7 @@ public class ControllerNode extends JangularNode {
 	private Class<? extends Scope> createDynamicControllerScopeClass(
 			Class<? extends Scope> controllerScopeClass, 
 			Class<? extends Scope> parentScopeClass, 
-			JangularCompiler compiler) {
+			CompilerSession session) {
 		
 		ArrayList<String> fieldsInDynamicClass = new ArrayList<String>(getReferencedVariables());
 		
@@ -173,7 +174,7 @@ public class ControllerNode extends JangularNode {
 				}
 				
 				if( parentField != null ) {
-					compiler.assertCasts(controllerField, parentField);
+					session.assertCasts(controllerField, parentField);
 				} 
 			} else {
 				Class<?> fieldType = parentField.getType();
@@ -194,7 +195,7 @@ public class ControllerNode extends JangularNode {
 		
 		cw.visitEnd();
 		
-		return JangularCompiler.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
 	}
 	
 	private static Class<? extends ControllerScopeValueCopier> createValueCopierClass(
@@ -244,7 +245,7 @@ public class ControllerNode extends JangularNode {
 					fieldName,
 					Type.getDescriptor(parentField.getType()));
 			
-			JangularUtils.checkcast(targetField, parentField, mv);
+			JangularCompilerUtils.checkcast(targetField, parentField, mv);
 			
 			mv.visitFieldInsn(Opcodes.PUTFIELD, 
 					Type.getInternalName(targetScopeClass), 
@@ -258,7 +259,7 @@ public class ControllerNode extends JangularNode {
 		
 		cw.visitEnd();
 		
-		return JangularCompiler.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
 	}
 
 }

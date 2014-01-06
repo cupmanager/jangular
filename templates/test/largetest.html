@@ -1,4 +1,4 @@
-<j-controller controller="net.cupmanager.jangular.testing.MinCtrl">
+<j-controller controller="net.cupmanager.jangular.util.MinCtrl">
 	<ul>
 		<li j-repeat="item in items">
 			
@@ -16,7 +16,7 @@
 			</j-else-if>
 			<j-else>
 				item 3: {{item.title}}
-				<j-repeat repeat="nr in item.nrs if $ % 2 == 1">
+				<j-repeat for="nr in item.nrs if $ % 2 == 1">
 					nr: {{nr}} {{item.nrs.size()}}  {{item.title}}
 				</j-repeat>
 			</j-else>

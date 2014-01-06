@@ -17,7 +17,7 @@ public abstract class AbstractController<T extends Scope> {
 		return null;
 	}
 	
-	public static Class<? extends Scope>  getScopeClass(Class<? extends AbstractController> controllerClass) {
+	public static Class<? extends Scope>  getScopeClass(Class<? extends AbstractController<?>> controllerClass) {
 		Method[] methods = controllerClass.getMethods();
 		for (Method m : methods) {
 			if ("eval".equals(m.getName())) {

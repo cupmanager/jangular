@@ -4,11 +4,19 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.cupmanager.jangular.JangularClassLoader;
+
 import org.apache.commons.lang.ClassUtils;
 
 public class CompilerSession {
 	private List<String> warnings = new ArrayList<String>();
-
+	
+	private JangularClassLoader classLoader = new JangularClassLoader();
+	
+	public JangularClassLoader getClassLoader() {
+		return classLoader;
+	}
+	
 	public void printWarnings() {
 		if (!warnings.isEmpty()) {
 			System.err.println("The Jangular Compiler encountered the following warnings:\n");

@@ -2,6 +2,7 @@ package net.cupmanager.jangular.expressions;
 
 import java.util.Collection;
 
+import net.cupmanager.jangular.JangularClassLoader;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
@@ -42,7 +43,7 @@ public abstract class CompiledExpression {
 		
 		if( expression.matches("([a-zA-z_][a-zA-z0-9_\\.]*)") ) {
 			try {
-				return generateByteCode(scopeClass, expression);
+				return generateByteCode(session.getClassLoader(), scopeClass, expression);
 			} catch (Exception e) {
 				// Maybe some problem with types. That's okay, let MVEL handle it.
 				session.warn("CompiledExpression couldn't generate bytecode-class for expression \"\". " + e.getMessage());
@@ -55,7 +56,7 @@ public abstract class CompiledExpression {
 	private static int compiledExpressionSuffix = 0;
 	
 
-	private static CompiledExpression generateByteCode(Class<? extends Scope> scopeClass, String expression) throws NoSuchFieldException, SecurityException{
+	private static CompiledExpression generateByteCode(JangularClassLoader classLoader, Class<? extends Scope> scopeClass, String expression) throws NoSuchFieldException, SecurityException{
 		
 		String className = "CompiledExpression_" + scopeClass.getSimpleName() + "_" + (compiledExpressionSuffix++);
 		String parentClassName = Type.getInternalName(scopeClass);
@@ -114,7 +115,7 @@ public abstract class CompiledExpression {
 		cw.visitEnd();
 		
 		
-		Class<? extends CompiledExpression> cl = JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
+		Class<? extends CompiledExpression> cl = JangularCompilerUtils.loadScopeClass(classLoader, cw.toByteArray(), className);
 		
 		try {
 			return cl.newInstance();

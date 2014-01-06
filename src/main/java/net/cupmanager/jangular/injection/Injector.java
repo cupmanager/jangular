@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.cupmanager.jangular.JangularClassLoader;
 import net.cupmanager.jangular.annotations.Inject;
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
@@ -26,7 +27,7 @@ public abstract class Injector {
 	
 	
 	private static int injectorClassSuffix = 0;
-	public static Class<? extends Injector> createInjectorClass(Class<?> targetClass, Class<? extends EvaluationContext> evaluationContextClass) {
+	public static Class<? extends Injector> createInjectorClass(JangularClassLoader classLoader, Class<?> targetClass, Class<? extends EvaluationContext> evaluationContextClass) {
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
 
@@ -79,7 +80,7 @@ public abstract class Injector {
 		cw.visitEnd();
 		
 		
-		return JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompilerUtils.loadScopeClass(classLoader, cw.toByteArray(), className);
 	}
 	
 	

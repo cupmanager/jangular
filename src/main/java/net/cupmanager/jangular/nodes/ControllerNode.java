@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.cupmanager.jangular.AbstractController;
+import net.cupmanager.jangular.JangularClassLoader;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.compiler.CompilerSession;
@@ -129,11 +130,12 @@ public class ControllerNode extends JangularNode {
 		this.node.compileScope(dynamicControllerScopeClass, evaluationContextClass, session);
 		
 		Class<? extends ControllerScopeValueCopier> valueCopierClass = 
-				createValueCopierClass(getReferencedVariables(),dynamicControllerScopeClass, parentScopeClass);
+				createValueCopierClass(getReferencedVariables(),dynamicControllerScopeClass, parentScopeClass, 
+						session.getClassLoader());
 		this.valueCopier = valueCopierClass.newInstance();
 		
 
-		Class<? extends Injector> injectorClass = Injector.createInjectorClass(controllerClass, evaluationContextClass);
+		Class<? extends Injector> injectorClass = Injector.createInjectorClass(session.getClassLoader(), controllerClass, evaluationContextClass);
 		this.injector = injectorClass.newInstance();
 	}
 	
@@ -195,13 +197,14 @@ public class ControllerNode extends JangularNode {
 		
 		cw.visitEnd();
 		
-		return JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompilerUtils.loadScopeClass(session.getClassLoader(), cw.toByteArray(), className);
 	}
 	
 	private static Class<? extends ControllerScopeValueCopier> createValueCopierClass(
 			Collection<String> fieldNames,
 			Class<? extends Scope> targetScopeClass, 
-			Class<? extends Scope> parentScopeClass) throws NoSuchFieldException, SecurityException{
+			Class<? extends Scope> parentScopeClass,
+			JangularClassLoader classLoader) throws NoSuchFieldException, SecurityException{
 		
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
@@ -259,7 +262,7 @@ public class ControllerNode extends JangularNode {
 		
 		cw.visitEnd();
 		
-		return JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompilerUtils.loadScopeClass(classLoader, cw.toByteArray(), className);
 	}
 
 }

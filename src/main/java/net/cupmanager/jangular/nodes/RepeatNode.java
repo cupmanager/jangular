@@ -209,7 +209,7 @@ public class RepeatNode extends JangularNode {
 		}
 		 */
 		
-		Class<? extends RepeatNodeScope> cl = JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
+		Class<? extends RepeatNodeScope> cl = JangularCompilerUtils.loadScopeClass(session.getClassLoader(), cw.toByteArray(), className);
 		
 		//this.setMethod = cl.getMethod("set", parentScopeClass, int.class, Object.class);
 //		this.nodeScope = cl.newInstance();

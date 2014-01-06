@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.cupmanager.jangular.AbstractDirective;
+import net.cupmanager.jangular.JangularClassLoader;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.compiler.CompilerSession;
@@ -138,7 +139,7 @@ public class DirectiveNode extends JangularNode {
 			fieldNames = getDirectiveScopeIns();
 			fieldTypes = getDirectiveScopeTypes();
 		} else {
-			directiveScopeClass = createDirectiveScopeClass();
+			directiveScopeClass = createDirectiveScopeClass(session.getClassLoader());
 			fieldNames = nodeVariables;
 		}
 
@@ -150,16 +151,16 @@ public class DirectiveNode extends JangularNode {
 		
 		this.node.compileScope(directiveScopeClass, evaluationContextClass, session);
 		
-		Class<? extends DirectiveScopeValueCopier> valueCopierClass = createValueCopierClass(directiveScopeClass,fieldNames,fieldTypes);
+		Class<? extends DirectiveScopeValueCopier> valueCopierClass = createValueCopierClass(directiveScopeClass,fieldNames,fieldTypes,session.getClassLoader());
 		this.valueCopier = valueCopierClass.newInstance();
 		
 		
-		Class<? extends Injector> injectorClass = Injector.createInjectorClass(directiveInstance.getClass(), evaluationContextClass);
+		Class<? extends Injector> injectorClass = Injector.createInjectorClass(session.getClassLoader(), directiveInstance.getClass(), evaluationContextClass);
 		this.injector = injectorClass.newInstance();
 	}
 	
 	
-	private Class<? extends Scope> createDirectiveScopeClass() {
+	private Class<? extends Scope> createDirectiveScopeClass(JangularClassLoader classLoader) {
 		ClassWriter cw = new ClassWriter(0);
 		FieldVisitor fv;
 		MethodVisitor mv;
@@ -189,10 +190,14 @@ public class DirectiveNode extends JangularNode {
 		
 		cw.visitEnd();
 		
-		return JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompilerUtils.loadScopeClass(classLoader, cw.toByteArray(), className);
 	}
 	
-	private Class<? extends DirectiveScopeValueCopier> createValueCopierClass(Class<? extends Scope> targetScopeClass, List<String> fieldNames, List<Class<?>> fieldTypes){
+	private Class<? extends DirectiveScopeValueCopier> createValueCopierClass(
+			Class<? extends Scope> targetScopeClass, 
+			List<String> fieldNames, 
+			List<Class<?>> fieldTypes, 
+			JangularClassLoader classLoader){
 		
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
@@ -248,7 +253,7 @@ public class DirectiveNode extends JangularNode {
 		
 		cw.visitEnd();
 		
-		return JangularCompilerUtils.loadScopeClass(cw.toByteArray(), className);
+		return JangularCompilerUtils.loadScopeClass(classLoader, cw.toByteArray(), className);
 	}
 
 }

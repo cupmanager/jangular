@@ -12,5 +12,5 @@ Todo
 * Tests & Documentation
 * Maybe compile() shouldn't return a node, but rather an object that holds both the node and the CompilerSession
 * Translations?
-* [FIXED] ill the generated classes ever disappear or will we eat memory until we die? 
+* [FIXED] Will the generated classes ever disappear or will we eat memory until we die? 
 * Directives as attributes and some transclude functionality?

@@ -14,6 +14,7 @@ import net.cupmanager.jangular.annotations.Template;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.DirectiveNode;
+import net.cupmanager.jangular.nodes.ExpressionNode;
 import net.cupmanager.jangular.nodes.JangularNode;
 
 import org.attoparser.AttoParseException;
@@ -68,18 +69,28 @@ public class JangularCompiler {
 		return n;
 	}
 	
-	public DirectiveNode getDirectiveNode(String name, Map<String, String> attributesObject, JangularNode node) {
+	public DirectiveNode getDirectiveNode(String name, Map<String, String> attributes, JangularNode content) {
 		Class<? extends AbstractDirective<?>> c = directiveRepository.get(name);
-		String templateFile = c.getAnnotation(Template.class).value();
+		return getDirectiveNode(c, attributes, content);
+	}
+	
+	public DirectiveNode getDirectiveNode(Class<? extends AbstractDirective<?>> c, Map<String, String> attributes, JangularNode content) {
+		
+		String template = c.getAnnotation(Template.class).value();
 		
 		try {
-			CompositeNode compositeNode = internalCompile(new FileInputStream(templateFile));
+			JangularNode templateNode = null;
+			if( template.matches("\\{\\{(.*?)\\}\\}")) {
+				templateNode = new ExpressionNode(template.substring(2, template.length()));
+			} else {
+				templateNode =	internalCompile(new FileInputStream(template));
+			}
 			
 			AbstractDirective<?> directiveInstance = c.newInstance();
 			
-			directiveInstance.compile(attributesObject, compositeNode);
+			directiveInstance.compile(attributes, templateNode);
 			
-			return new DirectiveNode(directiveInstance, compositeNode, attributesObject);
+			return new DirectiveNode(directiveInstance, templateNode, attributes);
 			
 		} catch (Exception e) {
 			throw new RuntimeException(e);

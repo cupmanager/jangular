@@ -9,7 +9,7 @@ import net.cupmanager.jangular.annotations.Directive;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.annotations.Inject;
 import net.cupmanager.jangular.annotations.Template;
-import net.cupmanager.jangular.nodes.CompositeNode;
+import net.cupmanager.jangular.nodes.JangularNode;
 import net.cupmanager.jangular.util.MatchTableDirective.MatchTableScope;
 
 @Directive("cm-matchtable")
@@ -25,7 +25,7 @@ public class MatchTableDirective extends AbstractDirective<MatchTableScope> {
 	}
 	
 	@Override
-	public void compile(Map<String,String> attrs, CompositeNode content) {
+	public void compile(Map<String,String> attrs, JangularNode content) {
 		
 	}
 	

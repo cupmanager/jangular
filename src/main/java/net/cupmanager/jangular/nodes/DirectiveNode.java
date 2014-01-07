@@ -34,7 +34,7 @@ public class DirectiveNode extends JangularNode {
 		}
 	}
 	
-	private CompositeNode node;
+	private JangularNode node;
 	private AbstractDirective directiveInstance;
 	private Map<String, String> attrs;
 	private CompiledExpression[] inExpressions;
@@ -52,9 +52,9 @@ public class DirectiveNode extends JangularNode {
 	private Injector injector;
 	
 	
-	public DirectiveNode(AbstractDirective<?> directiveInstance, CompositeNode compositeNode, Map<String, String> attrs) {
+	public DirectiveNode(AbstractDirective<?> directiveInstance, JangularNode node, Map<String, String> attrs) {
 		this.directiveInstance = directiveInstance;
-		this.node = compositeNode;
+		this.node = node;
 		
 		this.variables = new HashSet<String>();
 		this.attrs = attrs;
@@ -202,7 +202,7 @@ public class DirectiveNode extends JangularNode {
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
 
-		String className = "ValueCopier" + directiveScopeSuffix++;
+		String className = "DirectiveValueCopier" + directiveScopeSuffix++;
 		
 		cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className, null,
 				DirectiveScopeValueCopier.class.getName().replace('.', '/'), null);

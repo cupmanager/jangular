@@ -1,12 +1,14 @@
 package net.cupmanager.jangular.compiler;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.cupmanager.jangular.DirectiveRepository;
+import net.cupmanager.jangular.DirectiveRepository.InlineDirectiveMatcher;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.ConditionalNode;
 import net.cupmanager.jangular.nodes.ControllerNode;
@@ -224,9 +226,20 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 	
 	
 	
-	private static void parseText(String text, CompositeNode node) {
-		Matcher m = expressionPattern.matcher(text);
+	private void parseText(String text, CompositeNode node) {
+		List<InlineDirectiveMatcher> matchers = directiveRepository.getInlineDirectiveMatchers(text);
 		
+		for(InlineDirectiveMatcher matcher : matchers ){
+			int start = 0;
+			
+			while(matcher.matcher.find(start)) {
+				node.add(new TextNode(text.substring(start,matcher.matcher.start())));
+				start = matcher.matcher.end();
+				node.add(compiler.getDirectiveNode(matcher.directiveClass, matcher.getAttributes(), null));
+			}
+		}
+		
+		Matcher m = expressionPattern.matcher(text);
 		int start = 0;
 		
 		while(m.find(start)) {

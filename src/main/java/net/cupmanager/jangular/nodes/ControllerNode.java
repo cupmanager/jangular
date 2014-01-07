@@ -209,7 +209,7 @@ public class ControllerNode extends JangularNode {
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
 
-		String className = "ValueCopier" + controllerScopeSuffix++;
+		String className = "ControllerValueCopier" + controllerScopeSuffix++;
 		
 		cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className, null,
 				Type.getInternalName(ControllerScopeValueCopier.class), null);

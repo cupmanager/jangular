@@ -11,6 +11,7 @@ import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.compiler.JangularCompiler;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.JangularNode;
+import net.cupmanager.jangular.util.InlineTranslationDirective;
 import net.cupmanager.jangular.util.MatchTableDirective;
 
 import org.attoparser.AttoParseException;
@@ -41,6 +42,7 @@ public class LargeTest {
     {
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(MatchTableDirective.class);
+    	repo.register(InlineTranslationDirective.class);
     	
         JangularCompiler compiler = new JangularCompiler(repo);
         

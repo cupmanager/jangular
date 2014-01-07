@@ -1,7 +1,10 @@
 Jangular
 ========
 
-Java Templating engine with AngularJS-like syntax and concepts
+Java Templating engine with AngularJS-like syntax and concepts.
+
+Current status: Really super-early experimental alpha
+Send questions to jangular@cupmanager.net
 
 
 Todo

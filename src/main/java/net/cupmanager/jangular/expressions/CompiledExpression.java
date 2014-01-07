@@ -8,6 +8,7 @@ import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.objectweb.asm.ClassWriter;
@@ -30,7 +31,9 @@ public abstract class CompiledExpression {
 	
 	public static CompiledExpression compile(String expression, Class<? extends Scope> scopeClass, CompilerSession session){
 		
-		ParserContext pc = new ParserContext();
+		ParserConfiguration conf = new ParserConfiguration();
+		conf.setClassLoader(session.getClassLoader());
+		ParserContext pc = new ParserContext(conf);
 		
 		expression = expression.trim();
 		

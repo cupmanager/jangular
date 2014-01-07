@@ -12,6 +12,7 @@ import net.cupmanager.jangular.compiler.JangularCompilerUtils;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -31,9 +32,6 @@ public class RepeatNode extends JangularNode {
 	private Serializable listExpression;
 	private JangularNode node;
 	private ParserContext pc;
-//	private Collection<String> nodeVariables;
-	//private Method setMethod;
-//	private RepeatNodeScope nodeScope;
 	private Class<? extends RepeatNodeScope> nodeScopeClass;
 	private String listExpressionString;
 	private String listVarName;
@@ -111,8 +109,10 @@ public class RepeatNode extends JangularNode {
 			Class<? extends EvaluationContext> evaluationContextClass,
 			CompilerSession session) throws Exception {
 		
-		
-		this.pc = ParserContext.create().withInput(varName, Iterable.class);
+		ParserConfiguration conf = new ParserConfiguration();
+		conf.setClassLoader(session.getClassLoader());
+		this.pc = new ParserContext(conf);
+		pc.withInput(varName, Iterable.class);
 		pc.setStrictTypeEnforcement(true);
 		pc.addInput("this", parentScopeClass);
 		this.listExpression = MVEL.compileExpression("" + listExpressionString , pc);
@@ -122,6 +122,17 @@ public class RepeatNode extends JangularNode {
 		String className = "RepeatScope" + (repeatScopeSuffix++);
 		String parentClassName = parentScopeClass.getName().replace('.', '/');
 		
+		Class<? extends RepeatNodeScope> cl = createRepeatScopeClass(parentScopeClass, session, varType, className, parentClassName);
+		
+		this.nodeScopeClass = cl;
+		
+		node.compileScope(cl, evaluationContextClass, session);
+	}
+
+	private Class<? extends RepeatNodeScope> createRepeatScopeClass(
+			Class<? extends Scope> parentScopeClass, CompilerSession session,
+			Class<?> varType, String className, String parentClassName)
+			throws NoSuchFieldException {
 		ClassWriter cw = new ClassWriter(0);
 		FieldVisitor fv;
 		MethodVisitor mv;
@@ -194,29 +205,9 @@ public class RepeatNode extends JangularNode {
 	
 		cw.visitEnd();
 
-		/*
-		public class RepeatScope {
-			public int $index;
-			public Object varName;
-			public Object items;
-			
-			
-			public void set(Parent parent, int $index, Object varName) {
-				this.items = parent.items;
-				this.$index = $index;
-				this.varName = varName;
-			}
-		}
-		 */
 		
 		Class<? extends RepeatNodeScope> cl = JangularCompilerUtils.loadScopeClass(session.getClassLoader(), cw.toByteArray(), className);
-		
-		//this.setMethod = cl.getMethod("set", parentScopeClass, int.class, Object.class);
-//		this.nodeScope = cl.newInstance();
-		this.nodeScopeClass = cl;
-		
-		
-		node.compileScope(cl, evaluationContextClass, session);
+		return cl;
 	}
 
 }

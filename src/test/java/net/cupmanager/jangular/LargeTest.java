@@ -40,7 +40,7 @@ public class LargeTest {
 	@Test
     public void main() throws FileNotFoundException, ParserConfigurationException, SAXException, AttoParseException
     {
-    	DirectiveRepository repo = new DirectiveRepository();
+		DirectiveRepository repo = new DirectiveRepository();
     	repo.register(MatchTableDirective.class);
     	repo.register(InlineTranslationDirective.class);
     	

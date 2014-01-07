@@ -13,7 +13,7 @@ import net.cupmanager.jangular.nodes.JangularNode;
 import net.cupmanager.jangular.util.MatchTableDirective.MatchTableScope;
 
 @Directive("cm-matchtable")
-@Template("templates/test/matchtable.html")
+@Template("templates/test/directives/matchtable.html")
 public class MatchTableDirective extends AbstractDirective<MatchTableScope> {
 	
 	public @Inject String hej;

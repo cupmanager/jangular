@@ -81,7 +81,7 @@ public class JangularCompiler {
 		try {
 			JangularNode templateNode = null;
 			if( template.matches("\\{\\{(.*?)\\}\\}")) {
-				templateNode = new ExpressionNode(template.substring(2, template.length()));
+				templateNode = new ExpressionNode(template.substring(2, template.length()-2));
 			} else {
 				templateNode =	internalCompile(new FileInputStream(template));
 			}

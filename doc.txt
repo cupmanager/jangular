@@ -1,20 +1,32 @@
-Kanske göra nåt sånt här:
+Kanske göra nåt sånt här (riktigt builder-pattern så den returnerar en kopia hela tiden):
     
-    JangularCompiler c = JangularCompiler.builder()
-     .withDirectives(dirRepo)
-     .withTemplateLoader(loader);
+    CupManSingleton.minKompilator = 
+    	JangularCompiler.create()
+    		.withDirectives(dirRepo)
+    		.withTemplateLoader(loader);
     
+    JangularCompiler c = 
+    	CupManSingleton.minKompilator.
+    		.withContextClass(AppEvalContext.class)
+    		.withClassLoader(myOwnClassLoader);
     
-    CompilerSession s = c.session()
-     .withContextClass(AppEvalContext.class)
-     .withClassLoader(myOwnClassLoader);
-    
-    CompiledTemplate t = s.compile("largetest.html", AppScope.class);
+    CompiledTemplate t = c.compile("largetest.html", AppScope.class);
+    CompiledTemplate t = c.compile("largetest.html"); 	// Uses default empty scope
+    CompiledTemplate t = c.withClassLoader(makeAClassLoader()).compile("largetest.html");
     
     
     t.eval(scope, sb, context)
     t.getCompileDuration(TimeUnit.MILLISECONDS)
     t.warnings()
     t.usedDirectives()
+    t.loadedTemplates()
     t.generatedClasses()
-        
+	
+    
+Går såklart att bara köra:  
+    CompiledTemplate t = JangularCompiler.create().compile(new ByteArrayInputStream(myHtmlTemplateAsString));
+men då får man inte använda directives, 
+eller ladda in templates på något sätt, 
+och man kan inte injecta något till controllers, 
+och inte spec:a ett grundscope.
+    

@@ -1,6 +1,8 @@
 package net.cupmanager.jangular.compiler;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
@@ -11,6 +13,7 @@ import net.cupmanager.jangular.AbstractDirective;
 import net.cupmanager.jangular.DirectiveRepository;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.Template;
+import net.cupmanager.jangular.annotations.TemplateText;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.DirectiveNode;
@@ -74,17 +77,24 @@ public class JangularCompiler {
 		return getDirectiveNode(c, attributes, content);
 	}
 	
+	private InputStream getDirectiveTemplateInputStream(Class<? extends AbstractDirective<?>> c) throws FileNotFoundException {
+		Template templateAnnotation = c.getAnnotation(Template.class);
+		TemplateText templateTextAnnotation = c.getAnnotation(TemplateText.class);
+		if (templateAnnotation != null) {
+			String template = templateAnnotation.value();
+			return new FileInputStream(template);
+		} else if (templateTextAnnotation != null) {
+			String templateText = templateTextAnnotation.value();
+			return new ByteArrayInputStream(templateText.getBytes());
+		} else {
+			throw new RuntimeException("Directive " + c.getName() + " doesn't have @Template or @TemplateText");
+		}
+	}
+	
 	public DirectiveNode getDirectiveNode(Class<? extends AbstractDirective<?>> c, Map<String, String> attributes, JangularNode content) {
-		
-		String template = c.getAnnotation(Template.class).value();
-		
 		try {
-			JangularNode templateNode = null;
-			if( template.matches("\\{\\{(.*?)\\}\\}")) {
-				templateNode = new ExpressionNode(template.substring(2, template.length()-2));
-			} else {
-				templateNode =	internalCompile(new FileInputStream(template));
-			}
+			InputStream is = getDirectiveTemplateInputStream(c);
+			JangularNode templateNode =	internalCompile(is);
 			
 			AbstractDirective<?> directiveInstance = c.newInstance();
 			

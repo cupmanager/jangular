@@ -1,5 +1,8 @@
 package net.cupmanager.jangular.compiler;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -226,30 +229,78 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 	
 	
 	
+	
+	
+	private static class Range {
+		public int start;
+		public int end;
+		public List<JangularNode> nodes = new ArrayList<JangularNode>();
+		
+		public Range(int start, int end) {
+			this.start = start;
+			this.end = end;
+		}
+	}
 	private void parseText(String text, CompositeNode node) {
 		List<InlineDirectiveMatcher> matchers = directiveRepository.getInlineDirectiveMatchers(text);
 		
-		int start = 0;
+		List<Range> ranges = new ArrayList<Range>();
+		
 		for(InlineDirectiveMatcher matcher : matchers ){
 			
+			int start = 0;
 			while(matcher.matcher.find(start)) {
-				node.add(new TextNode(text.substring(start,matcher.matcher.start())));
+				Range range = new Range(matcher.matcher.start(), matcher.matcher.end());
+				range.nodes.add(compiler.getDirectiveNode(matcher.directiveClass, matcher.getAttributes(), null));
+				ranges.add(range);
+				
 				start = matcher.matcher.end();
-				node.add(compiler.getDirectiveNode(matcher.directiveClass, matcher.getAttributes(), null));
 			}
 		}
 		
 		Matcher m = expressionPattern.matcher(text);
-		
+		int start = 0;
 		while(m.find(start)) {
-			node.add(new TextNode(text.substring(start,m.start())));
+			Range range = new Range(m.start(), m.end());
+			range.nodes.add(new ExpressionNode(m.group(1)));
+			ranges.add(range);
+			
 			start = m.end();
-			node.add(new ExpressionNode(m.group(1)));
 		}
 		
-		node.add(new TextNode(text.substring(start)));
+		
+		// Sort the ranges
+		Collections.sort(ranges, new Comparator<Range>() {
+			@Override
+			public int compare(Range r1, Range r2) {
+				return r1.start - r2.start;
+			}
+		});
+		
+		// Add nodes
+		start = 0;
+		for (Range range : ranges) {
+			// Add text node before range
+			if (range.start > start) {
+				node.add(new TextNode(text.substring(start, range.start)));
+			}
+			
+			for (JangularNode n : range.nodes) { 
+				node.add(n);
+			}
+			
+			start = range.end;
+		}
+		
+		if (start < text.length()) {
+			node.add(new TextNode(text.substring(start)));
+		}
 	}
 
+	
+	
+	
+	
 	public CompositeNode getNode() {
 		return stack.pop();
 	}

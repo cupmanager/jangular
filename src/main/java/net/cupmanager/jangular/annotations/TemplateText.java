@@ -8,6 +8,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Template {
+public @interface TemplateText {
+
 	String value();
+
 }

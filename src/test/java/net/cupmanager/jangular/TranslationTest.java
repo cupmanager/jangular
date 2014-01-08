@@ -1,6 +1,6 @@
 package net.cupmanager.jangular;
 
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,13 +14,13 @@ import net.cupmanager.jangular.annotations.Directive;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.annotations.Inject;
 import net.cupmanager.jangular.annotations.Provides;
-import net.cupmanager.jangular.annotations.Template;
+import net.cupmanager.jangular.annotations.TemplateText;
 import net.cupmanager.jangular.compiler.JangularCompiler;
 import net.cupmanager.jangular.injection.EvaluationContext;
-import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.JangularNode;
 
 import org.attoparser.AttoParseException;
+import org.junit.Assert;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -49,7 +49,7 @@ public class TranslationTest {
 	
 	
 	@Directive("test-translate")
-	@Template("templates/test/directives/testtranslate.html")
+	@TemplateText("{{translated}}")
 	public static class TestTranslateDirective extends AbstractDirective<TestTranslateDirectiveScope> {
 		public @Inject("Language") String lang;
 		private JangularNode node;
@@ -87,7 +87,10 @@ public class TranslationTest {
         JangularCompiler compiler = new JangularCompiler(repo);
         
     	long start = System.currentTimeMillis();
-		JangularNode node = compiler.compile(new FileInputStream("templates/test/translationtest.html"), TranslationTestScope.class, TranslationTestEvalContext.class);
+    	String template = "<div j-controller=\"net.cupmanager.jangular.TranslationTest$TranslationTestController\">"+
+		    "<test-translate name=\"informationalName\">Web.Page.InformationalText</test-translate>"+
+		"</div>";
+		JangularNode node = compiler.compile(new ByteArrayInputStream(template.getBytes()), TranslationTestScope.class, TranslationTestEvalContext.class);
 		
 		long end = System.currentTimeMillis();
 		System.out.println("Compile took " + (end-start) + " ms");
@@ -99,7 +102,6 @@ public class TranslationTest {
 		}
 		
 		
-		
 		TranslationTestScope scope = new TranslationTestScope();
 		TranslationTestEvalContext context = new TranslationTestEvalContext();
 		
@@ -109,7 +111,9 @@ public class TranslationTest {
 		
 		end = System.currentTimeMillis();
 		
-		
+		String expected = "<div>translated(Web.Page.InformationalText)</div>";
+		String actual = sb.toString();
+		Assert.assertEquals(expected, actual);
 		System.out.println(sb);
     }
 }

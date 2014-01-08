@@ -38,7 +38,7 @@ public class LargeTest {
 	}
 	
 	@Test
-    public void main() throws FileNotFoundException, ParserConfigurationException, SAXException, AttoParseException
+    public void pleaseDontCrash() throws FileNotFoundException, ParserConfigurationException, SAXException, AttoParseException
     {
 		DirectiveRepository repo = new DirectiveRepository();
     	repo.register(MatchTableDirective.class);

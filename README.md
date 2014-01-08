@@ -15,6 +15,6 @@ Todo
 * Specify where Jangular should look for template files
 * Tests & Documentation
 * Maybe compile() shouldn't return a node, but rather an object that holds both the node and the CompilerSession
-* Translations?
+* Translations [FIXED] Can be implemented as directives / inline-directives 
 * [FIXED] Will the generated classes ever disappear or will we eat memory until we die? 
 * Directives as attributes and some transclude functionality?

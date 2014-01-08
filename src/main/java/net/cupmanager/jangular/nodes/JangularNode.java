@@ -22,6 +22,10 @@ public abstract class JangularNode {
 		eval(scope, sb, new EmptyEvaluationContext());
 	}
 	
+	public void eval(StringBuilder sb) {
+		eval(new Scope(), sb, new EmptyEvaluationContext());
+	}
+	
 	
 	
 }

@@ -8,14 +8,11 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.AbstractDirective;
-import net.cupmanager.jangular.DirectiveRepository;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.Template;
 import net.cupmanager.jangular.annotations.TemplateText;
 import net.cupmanager.jangular.compiler.templateloader.AbstractTemplateLoader;
-import net.cupmanager.jangular.compiler.templateloader.NullTemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
-import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.DirectiveNode;
 import net.cupmanager.jangular.nodes.JangularNode;
@@ -35,8 +32,17 @@ public class JangularCompiler {
 		this.conf = conf;
 	}
 	
-	public CompositeNode compile(String templatePath, Class<? extends Scope> scopeClass) 
-			throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
+	public CompositeNode compile(String templatePath) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
+		return compile(templatePath, Scope.class);
+	}
+	
+	
+	public CompositeNode compile(InputStream is)  throws ParserConfigurationException, SAXException, AttoParseException {
+		return compile(is, Scope.class);
+	}
+	
+	
+	public CompositeNode compile(String templatePath, Class<? extends Scope> scopeClass) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
 		AbstractTemplateLoader templateLoader = conf.getTemplateLoader();
 		InputStream is = templateLoader.loadTemplate(templatePath);
 		return compile(is, scopeClass);

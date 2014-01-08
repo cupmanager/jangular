@@ -3,8 +3,8 @@ package net.cupmanager.jangular.nodes;
 import java.util.Collection;
 
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.compiler.CompilerConfiguration.EmptyEvaluationContext;
 import net.cupmanager.jangular.compiler.CompilerSession;
-import net.cupmanager.jangular.compiler.JangularCompiler.EmptyEvaluationContext;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
 

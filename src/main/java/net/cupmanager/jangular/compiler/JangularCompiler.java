@@ -28,43 +28,26 @@ import org.attoparser.markup.MarkupParsingConfiguration.ElementBalancing;
 import org.xml.sax.SAXException;
 
 public class JangularCompiler {
-	private DirectiveRepository directiveRepository;
-	private AbstractTemplateLoader templateLoader;
 	
-	public JangularCompiler(DirectiveRepository directiveRepository, AbstractTemplateLoader templateLoader) {
-		this.directiveRepository = directiveRepository;
-		this.templateLoader = templateLoader;
+	private CompilerConfiguration conf;
+
+	public JangularCompiler(CompilerConfiguration conf) {
+		this.conf = conf;
 	}
 	
-	public JangularCompiler(DirectiveRepository directiveRepository) {
-		this(directiveRepository, new NullTemplateLoader());
-	}
-	
-	public static class EmptyEvaluationContext extends EvaluationContext {}
-	
-	public CompositeNode compile(String templatePath, Class<? extends Scope> scopeClass)  throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
+	public CompositeNode compile(String templatePath, Class<? extends Scope> scopeClass) 
+			throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
+		AbstractTemplateLoader templateLoader = conf.getTemplateLoader();
 		InputStream is = templateLoader.loadTemplate(templatePath);
 		return compile(is, scopeClass);
 	}
 	
+
 	public CompositeNode compile(InputStream is, Class<? extends Scope> scopeClass)  throws ParserConfigurationException, SAXException, AttoParseException {
-		return compile(is, scopeClass, EmptyEvaluationContext.class);
-	}
-	
-	
-	public CompositeNode compile(String templatePath, Class<? extends Scope> scopeClass, Class<? extends EvaluationContext> evaluationContextClass) 
-			throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
-		InputStream is = templateLoader.loadTemplate(templatePath);
-		return compile(is, scopeClass, evaluationContextClass);
-	}
-	
-	public CompositeNode compile(InputStream is, Class<? extends Scope> scopeClass, Class<? extends EvaluationContext> evaluationContextClass) 
-			throws ParserConfigurationException, SAXException, AttoParseException {
-		
 		CompilerSession session = new CompilerSession();
 		CompositeNode n = internalCompile(is);
 		try {
-			n.compileScope(scopeClass, evaluationContextClass, session);
+			n.compileScope(scopeClass, conf.getContextClass(), session);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -77,10 +60,10 @@ public class JangularCompiler {
 	CompositeNode internalCompile(InputStream is) throws ParserConfigurationException, SAXException, AttoParseException {
 		IAttoParser parser = new MarkupAttoParser();
 		
-		MarkupParsingConfiguration conf = new MarkupParsingConfiguration();
-		conf.setElementBalancing(ElementBalancing.REQUIRE_BALANCED);
+		MarkupParsingConfiguration parserConf = new MarkupParsingConfiguration();
+		parserConf.setElementBalancing(ElementBalancing.REQUIRE_BALANCED);
 
-		CompilerMarkupHandler handler = new CompilerMarkupHandler(this, conf, directiveRepository);
+		CompilerMarkupHandler handler = new CompilerMarkupHandler(this, parserConf, conf.getRepo());
 		parser.parse(new InputStreamReader(is), handler);
 		
 		CompositeNode n = handler.getNode();
@@ -89,19 +72,22 @@ public class JangularCompiler {
 	}
 	
 	public DirectiveNode getDirectiveNode(String name, Map<String, String> attributes, JangularNode content) {
-		Class<? extends AbstractDirective<?>> c = directiveRepository.get(name);
+		Class<? extends AbstractDirective<?>> c = conf.getRepo().get(name);
 		return getDirectiveNode(c, attributes, content);
 	}
 	
 	private InputStream getDirectiveTemplateInputStream(Class<? extends AbstractDirective<?>> c) throws TemplateLoaderException {
 		Template templateAnnotation = c.getAnnotation(Template.class);
 		TemplateText templateTextAnnotation = c.getAnnotation(TemplateText.class);
+		
 		if (templateAnnotation != null) {
 			String template = templateAnnotation.value();
-			return templateLoader.loadDirectiveTemplate(template);
+			return conf.getTemplateLoader().loadDirectiveTemplate(template);
+			
 		} else if (templateTextAnnotation != null) {
 			String templateText = templateTextAnnotation.value();
 			return new ByteArrayInputStream(templateText.getBytes());
+			
 		} else {
 			throw new RuntimeException("Directive " + c.getName() + " doesn't have @Template or @TemplateText");
 		}

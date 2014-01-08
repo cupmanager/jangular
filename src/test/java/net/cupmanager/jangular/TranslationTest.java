@@ -15,6 +15,7 @@ import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.annotations.Inject;
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.annotations.TemplateText;
+import net.cupmanager.jangular.compiler.CompilerConfiguration;
 import net.cupmanager.jangular.compiler.JangularCompiler;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.JangularNode;
@@ -84,13 +85,15 @@ public class TranslationTest {
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(TestTranslateDirective.class);
     	
-        JangularCompiler compiler = new JangularCompiler(repo);
+        JangularCompiler compiler = new JangularCompiler(CompilerConfiguration.create()
+        		.withDirectives(repo)
+        		.withContextClass(TranslationTestEvalContext.class));
         
     	long start = System.currentTimeMillis();
     	String template = "<div j-controller=\"net.cupmanager.jangular.TranslationTest$TranslationTestController\">"+
 		    "<test-translate name=\"informationalName\">Web.Page.InformationalText</test-translate>"+
 		"</div>";
-		JangularNode node = compiler.compile(new ByteArrayInputStream(template.getBytes()), TranslationTestScope.class, TranslationTestEvalContext.class);
+		JangularNode node = compiler.compile(new ByteArrayInputStream(template.getBytes()), TranslationTestScope.class);
 		
 		long end = System.currentTimeMillis();
 		System.out.println("Compile took " + (end-start) + " ms");

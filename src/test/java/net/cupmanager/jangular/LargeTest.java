@@ -7,6 +7,7 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.annotations.Provides;
+import net.cupmanager.jangular.compiler.CompilerConfiguration;
 import net.cupmanager.jangular.compiler.JangularCompiler;
 import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
@@ -42,15 +43,21 @@ public class LargeTest {
     public void pleaseDontCrash() throws FileNotFoundException, ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException
     {
 		DirectiveRepository repo = new DirectiveRepository();
-    	repo.register(MatchTableDirective.class);
-    	repo.register(InlineTranslationDirective.class);
+		repo.register(MatchTableDirective.class);
+		repo.register(InlineTranslationDirective.class);
+		
+		CompilerConfiguration conf = CompilerConfiguration.create()
+				.withDirectives(repo)
+				.withTemplateLoader(new FileTemplateLoader("templates/test", "templates/test/directives"))
+				.withContextClass(AppEvalContext.class);
+		
+		
     	
-    	FileTemplateLoader templateLoader = new FileTemplateLoader("templates/test", "templates/test/directives");
     	
-        JangularCompiler compiler = new JangularCompiler(repo, templateLoader);
+        JangularCompiler compiler = new JangularCompiler(conf);
         
     	long start = System.currentTimeMillis();
-		JangularNode node = compiler.compile("largetest.html", AppScope.class, AppEvalContext.class);
+		JangularNode node = compiler.compile("largetest.html", AppScope.class);
 		
 		long end = System.currentTimeMillis();
 		System.out.println("Compile took " + (end-start) + " ms");

@@ -8,6 +8,7 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.annotations.Provides;
+import net.cupmanager.jangular.compiler.CompilerConfiguration;
 import net.cupmanager.jangular.compiler.JangularCompiler;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.JangularNode;
@@ -32,14 +33,15 @@ public class InlineTranslationTest {
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(InlineTranslationDirective.class);
     	
-//    	FileTemplateLoader templateLoader = new FileTemplateLoader("templates/test", "templates/test/directives");
-        JangularCompiler compiler = new JangularCompiler(repo);
+        JangularCompiler compiler = new JangularCompiler(CompilerConfiguration.create()
+        		.withDirectives(repo)
+        		.withContextClass(TranslationTestEvalContext.class));
         
     	long start = System.currentTimeMillis();
     	String template = "<div>"+
 		    "{{1+2}} [['Key.For.Translation']] {{2+2}} yes!"+
 		"</div>";
-		JangularNode node = compiler.compile(new ByteArrayInputStream(template.getBytes()), TranslationTestScope.class, TranslationTestEvalContext.class);
+		JangularNode node = compiler.compile(new ByteArrayInputStream(template.getBytes()), TranslationTestScope.class);
 		
 		long end = System.currentTimeMillis();
 		System.out.println("Compile took " + (end-start) + " ms");

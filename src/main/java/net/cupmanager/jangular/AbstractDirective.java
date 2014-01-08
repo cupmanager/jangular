@@ -6,7 +6,7 @@ import java.util.Map;
 import net.cupmanager.jangular.nodes.JangularNode;
 
 public abstract class AbstractDirective<T extends Scope> {
-	public void compile(Map<String, String> attributesObject, JangularNode content) {
+	public void compile(Map<String, String> attributesObject, JangularNode templateNode, JangularNode contentNode) {
 	}
 	
 	public Class<? extends Scope> getScopeClass() {

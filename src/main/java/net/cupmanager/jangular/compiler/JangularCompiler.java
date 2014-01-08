@@ -88,7 +88,7 @@ public class JangularCompiler {
 			
 			AbstractDirective<?> directiveInstance = c.newInstance();
 			
-			directiveInstance.compile(attributes, templateNode);
+			directiveInstance.compile(attributes, templateNode, content);
 			
 			return new DirectiveNode(directiveInstance, templateNode, attributes);
 			

@@ -25,7 +25,7 @@ public class MatchTableDirective extends AbstractDirective<MatchTableScope> {
 	}
 	
 	@Override
-	public void compile(Map<String,String> attrs, JangularNode content) {
+	public void compile(Map<String,String> attrs, JangularNode templateNode, JangularNode contentNode) {
 		
 	}
 	

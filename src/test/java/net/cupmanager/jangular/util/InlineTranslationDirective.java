@@ -23,7 +23,7 @@ public class InlineTranslationDirective extends AbstractDirective<TranslationSco
 	}
 	
 	@Override
-	public void compile(Map<String, String> attributesObject, JangularNode content) {
+	public void compile(Map<String, String> attributesObject, JangularNode templateNode, JangularNode contentNode) {
 		
 	}
 	

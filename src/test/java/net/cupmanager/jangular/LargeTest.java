@@ -89,7 +89,7 @@ public class LargeTest {
 		end = System.currentTimeMillis();
 		
 		
-//		System.out.println(sb);
+		System.out.println(sb);
 		System.out.println( (end-start)/(float)times + " ms per template" );
     }
 }

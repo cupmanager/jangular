@@ -229,8 +229,8 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 	private void parseText(String text, CompositeNode node) {
 		List<InlineDirectiveMatcher> matchers = directiveRepository.getInlineDirectiveMatchers(text);
 		
+		int start = 0;
 		for(InlineDirectiveMatcher matcher : matchers ){
-			int start = 0;
 			
 			while(matcher.matcher.find(start)) {
 				node.add(new TextNode(text.substring(start,matcher.matcher.start())));
@@ -240,7 +240,6 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 		}
 		
 		Matcher m = expressionPattern.matcher(text);
-		int start = 0;
 		
 		while(m.find(start)) {
 			node.add(new TextNode(text.substring(start,m.start())));

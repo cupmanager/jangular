@@ -280,16 +280,20 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 		// Add nodes
 		start = 0;
 		for (Range range : ranges) {
-			// Add text node before range
-			if (range.start > start) {
-				node.add(new TextNode(text.substring(start, range.start)));
+			// Has to start after the previous range!
+			if (range.start >= start) {
+				
+				// Add the text that was before range
+				if (range.start > start) {
+					node.add(new TextNode(text.substring(start, range.start)));
+				}
+				
+				for (JangularNode n : range.nodes) { 
+					node.add(n);
+				}
+				
+				start = range.end;
 			}
-			
-			for (JangularNode n : range.nodes) { 
-				node.add(n);
-			}
-			
-			start = range.end;
 		}
 		
 		if (start < text.length()) {

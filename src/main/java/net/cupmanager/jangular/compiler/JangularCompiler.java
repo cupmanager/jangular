@@ -1,8 +1,6 @@
 package net.cupmanager.jangular.compiler;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
@@ -14,10 +12,12 @@ import net.cupmanager.jangular.DirectiveRepository;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.Template;
 import net.cupmanager.jangular.annotations.TemplateText;
+import net.cupmanager.jangular.compiler.templateloader.AbstractTemplateLoader;
+import net.cupmanager.jangular.compiler.templateloader.NullTemplateLoader;
+import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.DirectiveNode;
-import net.cupmanager.jangular.nodes.ExpressionNode;
 import net.cupmanager.jangular.nodes.JangularNode;
 
 import org.attoparser.AttoParseException;
@@ -29,24 +29,40 @@ import org.xml.sax.SAXException;
 
 public class JangularCompiler {
 	private DirectiveRepository directiveRepository;
+	private AbstractTemplateLoader templateLoader;
+	
+	public JangularCompiler(DirectiveRepository directiveRepository, AbstractTemplateLoader templateLoader) {
+		this.directiveRepository = directiveRepository;
+		this.templateLoader = templateLoader;
+	}
 	
 	public JangularCompiler(DirectiveRepository directiveRepository) {
-		this.directiveRepository = directiveRepository;
+		this(directiveRepository, new NullTemplateLoader());
 	}
 	
-	public static class EmptyEvaluationContext extends EvaluationContext {
-		
+	public static class EmptyEvaluationContext extends EvaluationContext {}
+	
+	public CompositeNode compile(String templatePath, Class<? extends Scope> scopeClass)  throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
+		InputStream is = templateLoader.loadTemplate(templatePath);
+		return compile(is, scopeClass);
 	}
 	
-	public CompositeNode compile(InputStream html, Class<? extends Scope> scopeClass)  throws ParserConfigurationException, SAXException, AttoParseException {
-		return compile(html, scopeClass, EmptyEvaluationContext.class);
+	public CompositeNode compile(InputStream is, Class<? extends Scope> scopeClass)  throws ParserConfigurationException, SAXException, AttoParseException {
+		return compile(is, scopeClass, EmptyEvaluationContext.class);
 	}
 	
-	public CompositeNode compile(InputStream html, Class<? extends Scope> scopeClass, Class<? extends EvaluationContext> evaluationContextClass) 
+	
+	public CompositeNode compile(String templatePath, Class<? extends Scope> scopeClass, Class<? extends EvaluationContext> evaluationContextClass) 
+			throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
+		InputStream is = templateLoader.loadTemplate(templatePath);
+		return compile(is, scopeClass, evaluationContextClass);
+	}
+	
+	public CompositeNode compile(InputStream is, Class<? extends Scope> scopeClass, Class<? extends EvaluationContext> evaluationContextClass) 
 			throws ParserConfigurationException, SAXException, AttoParseException {
 		
 		CompilerSession session = new CompilerSession();
-		CompositeNode n = internalCompile(html);
+		CompositeNode n = internalCompile(is);
 		try {
 			n.compileScope(scopeClass, evaluationContextClass, session);
 		} catch (Exception e) {
@@ -58,14 +74,14 @@ public class JangularCompiler {
 		return n;
 	}
 	
-	CompositeNode internalCompile(InputStream html) throws ParserConfigurationException, SAXException, AttoParseException {
+	CompositeNode internalCompile(InputStream is) throws ParserConfigurationException, SAXException, AttoParseException {
 		IAttoParser parser = new MarkupAttoParser();
 		
 		MarkupParsingConfiguration conf = new MarkupParsingConfiguration();
 		conf.setElementBalancing(ElementBalancing.REQUIRE_BALANCED);
 
 		CompilerMarkupHandler handler = new CompilerMarkupHandler(this, conf, directiveRepository);
-		parser.parse(new InputStreamReader(html), handler);
+		parser.parse(new InputStreamReader(is), handler);
 		
 		CompositeNode n = handler.getNode();
 		n.optimize();
@@ -77,12 +93,12 @@ public class JangularCompiler {
 		return getDirectiveNode(c, attributes, content);
 	}
 	
-	private InputStream getDirectiveTemplateInputStream(Class<? extends AbstractDirective<?>> c) throws FileNotFoundException {
+	private InputStream getDirectiveTemplateInputStream(Class<? extends AbstractDirective<?>> c) throws TemplateLoaderException {
 		Template templateAnnotation = c.getAnnotation(Template.class);
 		TemplateText templateTextAnnotation = c.getAnnotation(TemplateText.class);
 		if (templateAnnotation != null) {
 			String template = templateAnnotation.value();
-			return new FileInputStream(template);
+			return templateLoader.loadDirectiveTemplate(template);
 		} else if (templateTextAnnotation != null) {
 			String templateText = templateTextAnnotation.value();
 			return new ByteArrayInputStream(templateText.getBytes());

@@ -1,6 +1,5 @@
 package net.cupmanager.jangular;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +8,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.compiler.JangularCompiler;
+import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
+import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.JangularNode;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
@@ -38,16 +39,18 @@ public class LargeTest {
 	}
 	
 	@Test
-    public void pleaseDontCrash() throws FileNotFoundException, ParserConfigurationException, SAXException, AttoParseException
+    public void pleaseDontCrash() throws FileNotFoundException, ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException
     {
 		DirectiveRepository repo = new DirectiveRepository();
     	repo.register(MatchTableDirective.class);
     	repo.register(InlineTranslationDirective.class);
     	
-        JangularCompiler compiler = new JangularCompiler(repo);
+    	FileTemplateLoader templateLoader = new FileTemplateLoader("templates/test", "templates/test/directives");
+    	
+        JangularCompiler compiler = new JangularCompiler(repo, templateLoader);
         
     	long start = System.currentTimeMillis();
-		JangularNode node = compiler.compile(new FileInputStream("templates/test/largetest.html"), AppScope.class, AppEvalContext.class);
+		JangularNode node = compiler.compile("largetest.html", AppScope.class, AppEvalContext.class);
 		
 		long end = System.currentTimeMillis();
 		System.out.println("Compile took " + (end-start) + " ms");

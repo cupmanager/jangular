@@ -36,7 +36,8 @@ public class RepeatTest {
 	@Test
 	public void basic() throws ParserConfigurationException, SAXException, AttoParseException {
 		String template = "<div j-repeat=\"item in items\">{{$index}}: {{item.title}}</div>";
-		JangularNode node = new JangularCompiler(new DirectiveRepository()).compile(new ByteArrayInputStream(template.getBytes()), RepeatTestScope.class);
+		JangularNode node = new JangularCompiler(new DirectiveRepository())
+			.compile(new ByteArrayInputStream(template.getBytes()), RepeatTestScope.class);
 		
 		StringBuilder sb = new StringBuilder();
 		node.eval(createScope(), sb);
@@ -48,7 +49,8 @@ public class RepeatTest {
 	@Test
 	public void asTag() throws ParserConfigurationException, SAXException, AttoParseException {
 		String template = "<j-repeat for=\"item in items\">{{$index}}: {{item.title}}</j-repeat>";
-		JangularNode node = new JangularCompiler(new DirectiveRepository()).compile(new ByteArrayInputStream(template.getBytes()), RepeatTestScope.class);
+		JangularNode node = new JangularCompiler(new DirectiveRepository())
+			.compile(new ByteArrayInputStream(template.getBytes()), RepeatTestScope.class);
 		
 		StringBuilder sb = new StringBuilder();
 		node.eval(createScope(), sb);

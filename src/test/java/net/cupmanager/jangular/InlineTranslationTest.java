@@ -32,6 +32,7 @@ public class InlineTranslationTest {
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(InlineTranslationDirective.class);
     	
+//    	FileTemplateLoader templateLoader = new FileTemplateLoader("templates/test", "templates/test/directives");
         JangularCompiler compiler = new JangularCompiler(repo);
         
     	long start = System.currentTimeMillis();

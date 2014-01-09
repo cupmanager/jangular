@@ -2,18 +2,14 @@ package net.cupmanager.jangular;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import net.cupmanager.jangular.TranslationTest.TestTranslateDirective.TestTranslateDirectiveScope;
-import net.cupmanager.jangular.TranslationTest.TranslationTestController.TranslationTestControllerScope;
+import net.cupmanager.jangular.annotations.Context;
 import net.cupmanager.jangular.annotations.Directive;
 import net.cupmanager.jangular.annotations.In;
-import net.cupmanager.jangular.annotations.Context;
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.annotations.TemplateText;
 import net.cupmanager.jangular.compiler.CompiledTemplate;
@@ -35,13 +31,12 @@ public class TranslationTest {
 		}
 	}
 	
-	public static class TranslationTestScope extends Scope {}
 	
-	
+	// Have to put these nested classes outside (actually wanted this inside the TranslationTestController but 'mvn test' bails)
+	public static class TranslationTestControllerScope extends Scope {
+		public Name informationalName;
+	}
 	public static class TranslationTestController extends AbstractController<TranslationTestControllerScope> {
-		public static class TranslationTestControllerScope extends Scope {
-			public Name informationalName;
-		}
 
 		@Override
 		public void eval(TranslationTestControllerScope scope) {
@@ -51,16 +46,18 @@ public class TranslationTest {
 	
 	
 	
+	// Have to put these nested classes outside (actually wanted this inside the TranslationTestController but 'mvn test' bails)
+	public static class TestTranslateDirectiveScope extends Scope {
+		public @In Name name;
+		public String translated;
+	}
+	
 	@Directive("test-translate")
 	@TemplateText("{{translated}}")
 	public static class TestTranslateDirective extends AbstractDirective<TestTranslateDirectiveScope> {
 		public @Context("Language") String lang;
 		private JangularNode node;
 		
-		public static class TestTranslateDirectiveScope extends Scope {
-			public @In Name name;
-			public String translated;
-		}
 
 		@Override
 		public void compile(Map<String, String> attributesObject, JangularNode templateNode, JangularNode contentNode) {
@@ -95,16 +92,15 @@ public class TranslationTest {
     	String template = "<div j-controller=\"net.cupmanager.jangular.TranslationTest$TranslationTestController\">"+
 		    "<test-translate name=\"informationalName\">Web.Page.InformationalText</test-translate>"+
 		"</div>";
-		CompiledTemplate compiled = compiler.compile(new ByteArrayInputStream(template.getBytes()), TranslationTestScope.class);
+		CompiledTemplate compiled = compiler.compile(new ByteArrayInputStream(template.getBytes()));
 		System.out.println("Compile took " + compiled.getCompileDuration(TimeUnit.MILLISECONDS) + " ms");
 		
 		
-		TranslationTestScope scope = new TranslationTestScope();
 		TranslationTestEvalContext context = new TranslationTestEvalContext();
 		
 		StringBuilder sb = new StringBuilder();
 		sb = new StringBuilder();
-		compiled.eval(scope, sb, context);
+		compiled.eval(sb, context);
 		
 		
 		String expected = "<div>translated(Web.Page.InformationalText)</div>";

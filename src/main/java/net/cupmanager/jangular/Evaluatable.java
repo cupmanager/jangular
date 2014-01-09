@@ -10,6 +10,10 @@ public abstract class Evaluatable {
 		eval(scope, sb, new EmptyEvaluationContext());
 	}
 	
+	public void eval(StringBuilder sb, EvaluationContext context) {
+		eval(new Scope(), sb, context);
+	}
+	
 	public void eval(StringBuilder sb) {
 		eval(new Scope(), sb, new EmptyEvaluationContext());
 	}

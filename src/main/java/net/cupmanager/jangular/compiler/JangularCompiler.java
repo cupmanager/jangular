@@ -32,6 +32,9 @@ public class JangularCompiler {
 	public JangularCompiler(CompilerConfiguration conf) {
 		this.conf = conf;
 	}
+	public JangularCompiler() {
+		this.conf = CompilerConfiguration.create();
+	}
 	
 	public CompiledTemplate compile(String templatePath) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
 		return compile(templatePath, Scope.class);

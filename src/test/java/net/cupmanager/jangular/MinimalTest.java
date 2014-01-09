@@ -5,7 +5,6 @@ import java.io.ByteArrayInputStream;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.compiler.CompiledTemplate;
-import net.cupmanager.jangular.compiler.CompilerConfiguration;
 import net.cupmanager.jangular.compiler.JangularCompiler;
 
 import org.attoparser.AttoParseException;
@@ -20,7 +19,7 @@ public class MinimalTest {
 	public void basic() throws ParserConfigurationException, SAXException, AttoParseException {
 		String html = "<div>{{1+1}} == 2</div>";
 		
-		CompiledTemplate template = new JangularCompiler(CompilerConfiguration.create())
+		CompiledTemplate template = new JangularCompiler()
 			.compile(new ByteArrayInputStream(html.getBytes()));
 		
 		StringBuilder sb = new StringBuilder();

@@ -12,6 +12,8 @@ import net.cupmanager.jangular.AbstractDirective;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.Template;
 import net.cupmanager.jangular.annotations.TemplateText;
+import net.cupmanager.jangular.compiler.caching.CachingStrategy;
+import net.cupmanager.jangular.compiler.caching.CachingTemplateCompiler;
 import net.cupmanager.jangular.compiler.templateloader.AbstractTemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.nodes.CompositeNode;

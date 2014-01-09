@@ -12,10 +12,10 @@ import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
 import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
 import net.cupmanager.jangular.compiler.TemplateCompiler;
+import net.cupmanager.jangular.compiler.caching.GuavaCachingStrategy;
 import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.injection.EvaluationContext;
-import net.cupmanager.jangular.util.GuavaCachingStrategy;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
 import net.cupmanager.jangular.util.MatchTableDirective;
 

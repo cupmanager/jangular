@@ -1,4 +1,4 @@
-package net.cupmanager.jangular.compiler;
+package net.cupmanager.jangular.compiler.caching;
 
 import java.io.InputStream;
 import java.util.concurrent.Callable;
@@ -6,6 +6,8 @@ import java.util.concurrent.Callable;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.compiler.CompiledTemplate;
+import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 
 import org.attoparser.AttoParseException;

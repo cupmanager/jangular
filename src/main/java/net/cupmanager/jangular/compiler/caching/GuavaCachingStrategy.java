@@ -1,10 +1,10 @@
-package net.cupmanager.jangular.util;
+package net.cupmanager.jangular.compiler.caching;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-import net.cupmanager.jangular.compiler.CachingStrategy;
 import net.cupmanager.jangular.compiler.CompiledTemplate;
+
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;

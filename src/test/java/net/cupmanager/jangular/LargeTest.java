@@ -14,6 +14,7 @@ import net.cupmanager.jangular.compiler.JangularCompiler;
 import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.injection.EvaluationContext;
+import net.cupmanager.jangular.util.GuavaCompilerCache;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
 import net.cupmanager.jangular.util.MatchTableDirective;
 
@@ -52,9 +53,18 @@ public class LargeTest {
 				.withTemplateLoader(new FileTemplateLoader("templates/test", "templates/test/directives"))
 				.withContextClass(AppEvalContext.class);
 		
+		conf = conf.withCache(new GuavaCompilerCache());
+		
         JangularCompiler compiler = new JangularCompiler(conf);
         
 		CompiledTemplate template = compiler.compile("largetest.html", AppScope.class);
+		
+		/* These will hit the cache immediately */
+		template = compiler.compile("largetest.html", AppScope.class);
+		template = compiler.compile("largetest.html", AppScope.class);
+		template = compiler.compile("largetest.html", AppScope.class);
+		template = compiler.compile("largetest.html", AppScope.class);
+		
 		System.out.println("Compile took " + template.getCompileDuration(TimeUnit.MILLISECONDS) + " ms");
 		template.printWarnings();
 		

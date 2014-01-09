@@ -13,12 +13,12 @@ import net.cupmanager.jangular.TranslationTest.TestTranslateDirective.TestTransl
 import net.cupmanager.jangular.TranslationTest.TranslationTestController.TranslationTestControllerScope;
 import net.cupmanager.jangular.annotations.Directive;
 import net.cupmanager.jangular.annotations.In;
-import net.cupmanager.jangular.annotations.Inject;
+import net.cupmanager.jangular.annotations.Context;
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.annotations.TemplateText;
 import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
-import net.cupmanager.jangular.compiler.JangularCompiler;
+import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.JangularNode;
 
@@ -54,7 +54,7 @@ public class TranslationTest {
 	@Directive("test-translate")
 	@TemplateText("{{translated}}")
 	public static class TestTranslateDirective extends AbstractDirective<TestTranslateDirectiveScope> {
-		public @Inject("Language") String lang;
+		public @Context("Language") String lang;
 		private JangularNode node;
 		
 		public static class TestTranslateDirectiveScope extends Scope {
@@ -87,9 +87,10 @@ public class TranslationTest {
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(TestTranslateDirective.class);
     	
-        JangularCompiler compiler = new JangularCompiler(CompilerConfiguration.create()
-        		.withDirectives(repo)
-        		.withContextClass(TranslationTestEvalContext.class));
+        ConcreteTemplateCompiler compiler = ConcreteTemplateCompiler.create(
+        		CompilerConfiguration.create()
+        			.withDirectives(repo)
+        			.withContextClass(TranslationTestEvalContext.class));
         
     	String template = "<div j-controller=\"net.cupmanager.jangular.TranslationTest$TranslationTestController\">"+
 		    "<test-translate name=\"informationalName\">Web.Page.InformationalText</test-translate>"+

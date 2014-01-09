@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.ClassUtils;
+import com.google.common.primitives.Primitives;
 
 public class CompilerSession {
 	private List<String> warnings = new ArrayList<String>();
@@ -29,8 +29,8 @@ public class CompilerSession {
 	}
 	
 	public void assertCasts(Field toField, Field fromField) {
-		Class<?> toFieldClass = ClassUtils.primitiveToWrapper(toField.getType());
-		Class<?> fromFieldClass = ClassUtils.primitiveToWrapper(fromField.getType());
+		Class<?> toFieldClass = Primitives.wrap(toField.getType());
+		Class<?> fromFieldClass = Primitives.wrap(fromField.getType());
 		
 		if( !toFieldClass.isAssignableFrom(fromFieldClass)) {
 			if( !fromFieldClass.isAssignableFrom(toFieldClass)) {

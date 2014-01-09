@@ -25,32 +25,53 @@ import org.attoparser.markup.MarkupParsingConfiguration;
 import org.attoparser.markup.MarkupParsingConfiguration.ElementBalancing;
 import org.xml.sax.SAXException;
 
-public class JangularCompiler {
+public class ConcreteTemplateCompiler implements TemplateCompiler {
+	
+	public static ConcreteTemplateCompiler create() {
+		return new ConcreteTemplateCompiler();
+	}
+	
+	public static ConcreteTemplateCompiler create(CompilerConfiguration conf) {
+		return new ConcreteTemplateCompiler().withConfig(conf);
+	}
 	
 	private CompilerConfiguration conf;
 
-	public JangularCompiler(CompilerConfiguration conf) {
-		this.conf = conf;
-	}
-	public JangularCompiler() {
+	private ConcreteTemplateCompiler() {
 		this.conf = CompilerConfiguration.create();
 	}
 	
+	
+	
+	private ConcreteTemplateCompiler copy() {
+		ConcreteTemplateCompiler jc = new ConcreteTemplateCompiler();
+		jc.conf = conf;
+		return jc;
+	}
+	
+	
+	public ConcreteTemplateCompiler withConfig(CompilerConfiguration conf) {
+		ConcreteTemplateCompiler cc = copy();
+		cc.conf = conf;
+		return cc;
+	}
+	
+	public TemplateCompiler cached(CachingStrategy cachingStrategy) {
+		return new CachingTemplateCompiler(this, cachingStrategy);
+	}
+	
+	@Override
 	public CompiledTemplate compile(String templatePath) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
 		return compile(templatePath, Scope.class);
 	}
 	
+	
+	@Override
 	public CompiledTemplate compile(String templatePath, Class<? extends Scope> scopeClass) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
-		CompiledTemplate cached = conf.getCache().get(templatePath);
-		if (cached != null) {
-			return cached;
-		} else {
-			AbstractTemplateLoader templateLoader = conf.getTemplateLoader();
-			InputStream is = templateLoader.loadTemplate(templatePath);
-			CompiledTemplate compiled = compile(is, scopeClass);
-			conf.getCache().save(templatePath, compiled);
-			return compiled;
-		}
+		AbstractTemplateLoader templateLoader = conf.getTemplateLoader();
+		InputStream is = templateLoader.loadTemplate(templatePath);
+		CompiledTemplate compiled = compile(is, scopeClass);
+		return compiled;
 	}
 	
 	

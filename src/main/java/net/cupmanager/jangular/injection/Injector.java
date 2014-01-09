@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.cupmanager.jangular.annotations.Inject;
+import net.cupmanager.jangular.annotations.Context;
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
@@ -101,7 +101,7 @@ public abstract class Injector {
 	private static List<InjectableField> getInjectableFields(Class<?> c) {
 		List<InjectableField> fields = new ArrayList<InjectableField>();
 		for (Field field : c.getFields()) {
-			Inject injectAnnotation = field.getAnnotation(Inject.class);
+			Context injectAnnotation = field.getAnnotation(Context.class);
 			if (injectAnnotation != null) {
 				InjectableField injectableField = new InjectableField(field.getName(), injectAnnotation.value(), field.getType());
 				fields.add(injectableField);

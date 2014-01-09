@@ -8,7 +8,7 @@
 	<packaging>jar</packaging>
 
 	<name>Jangular</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/cupmanager/jangular</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -39,12 +39,6 @@
 			<groupId>org.attoparser</groupId>
 			<artifactId>attoparser</artifactId>
 			<version>1.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.velocity</groupId>
-			<artifactId>velocity</artifactId>
-			<version>1.6.2</version>
 		</dependency>
 
 		<dependency>

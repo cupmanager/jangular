@@ -15,12 +15,13 @@ import net.cupmanager.jangular.compiler.JangularCompilerUtils;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.injection.Injector;
 
-import org.apache.commons.lang.ClassUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+
+import com.google.common.primitives.Primitives;
 
 public class ControllerNode extends JangularNode {
 	
@@ -164,7 +165,7 @@ public class ControllerNode extends JangularNode {
 				// Just make sure that it is availiable if necessary
 				
 				Class<?> fieldType = controllerField.getType();
-				fieldType = ClassUtils.primitiveToWrapper(fieldType);
+				fieldType = Primitives.wrap(fieldType);
 				
 				if( controllerField.getAnnotation(In.class) != null ){
 					if( parentField == null ) {

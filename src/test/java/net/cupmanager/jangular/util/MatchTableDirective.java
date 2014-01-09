@@ -7,7 +7,7 @@ import net.cupmanager.jangular.LargeTest.Item;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.Directive;
 import net.cupmanager.jangular.annotations.In;
-import net.cupmanager.jangular.annotations.Inject;
+import net.cupmanager.jangular.annotations.Context;
 import net.cupmanager.jangular.annotations.Template;
 import net.cupmanager.jangular.nodes.JangularNode;
 import net.cupmanager.jangular.util.MatchTableDirective.MatchTableScope;
@@ -16,7 +16,7 @@ import net.cupmanager.jangular.util.MatchTableDirective.MatchTableScope;
 @Template("matchtable.html")
 public class MatchTableDirective extends AbstractDirective<MatchTableScope> {
 	
-	public @Inject String hej;
+	public @Context String hej;
 	
 	public static class MatchTableScope extends Scope {
 		@In public Item item;

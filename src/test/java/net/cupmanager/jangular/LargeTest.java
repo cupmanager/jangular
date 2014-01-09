@@ -10,17 +10,20 @@ import javax.xml.parsers.ParserConfigurationException;
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
-import net.cupmanager.jangular.compiler.JangularCompiler;
+import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
+import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.injection.EvaluationContext;
-import net.cupmanager.jangular.util.GuavaCompilerCache;
+import net.cupmanager.jangular.util.GuavaCachingStrategy;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
 import net.cupmanager.jangular.util.MatchTableDirective;
 
 import org.attoparser.AttoParseException;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import com.google.common.cache.CacheBuilder;
 
 public class LargeTest {
 	public static class Item {
@@ -53,9 +56,9 @@ public class LargeTest {
 				.withTemplateLoader(new FileTemplateLoader("templates/test", "templates/test/directives"))
 				.withContextClass(AppEvalContext.class);
 		
-		conf = conf.withCache(new GuavaCompilerCache());
-		
-        JangularCompiler compiler = new JangularCompiler(conf);
+        TemplateCompiler compiler = ConcreteTemplateCompiler.create()
+        		.withConfig(conf)
+            	.cached(new GuavaCachingStrategy(CacheBuilder.newBuilder().maximumSize(1000)));
         
 		CompiledTemplate template = compiler.compile("largetest.html", AppScope.class);
 		

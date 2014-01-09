@@ -5,7 +5,7 @@ import java.util.Map;
 import net.cupmanager.jangular.AbstractDirective;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
-import net.cupmanager.jangular.annotations.Inject;
+import net.cupmanager.jangular.annotations.Context;
 import net.cupmanager.jangular.annotations.InlineDirective;
 import net.cupmanager.jangular.annotations.TemplateText;
 import net.cupmanager.jangular.nodes.JangularNode;
@@ -15,7 +15,7 @@ import net.cupmanager.jangular.util.InlineTranslationDirective.TranslationScope;
 @InlineDirective("\\[\\[(?<key>.*?)(?:::(?<defaultTranslation>.*?))?\\]\\]")
 public class InlineTranslationDirective extends AbstractDirective<TranslationScope> {
 	
-	public @Inject("Language") String language;
+	public @Context("Language") String language;
 	
 	public static class TranslationScope extends Scope {
 		@In public String key;

@@ -9,7 +9,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
-import net.cupmanager.jangular.compiler.JangularCompiler;
+import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
+import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
 
@@ -32,7 +33,8 @@ public class InlineTranslationTest {
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(InlineTranslationDirective.class);
     	
-        JangularCompiler compiler = new JangularCompiler(CompilerConfiguration.create()
+        TemplateCompiler compiler = ConcreteTemplateCompiler.create()
+    		.withConfig(CompilerConfiguration.create()
         		.withDirectives(repo)
         		.withContextClass(TranslationTestEvalContext.class));
         

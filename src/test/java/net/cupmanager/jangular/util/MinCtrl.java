@@ -6,11 +6,11 @@ import net.cupmanager.jangular.AbstractController;
 import net.cupmanager.jangular.LargeTest.Item;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
-import net.cupmanager.jangular.annotations.Inject;
+import net.cupmanager.jangular.annotations.Context;
 import net.cupmanager.jangular.util.MinCtrl.MinCtrlScope;
 
 public class MinCtrl extends AbstractController<MinCtrlScope> {
-	public @Inject("URL") String url = "http://localhost/stuff";
+	public @Context("URL") String url = "http://localhost/stuff";
 	
 	public static class MinCtrlScope extends Scope {
 		public String info;

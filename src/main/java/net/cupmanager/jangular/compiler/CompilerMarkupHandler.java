@@ -60,9 +60,9 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 	private Stack<CompositeNode> stack = new Stack<CompositeNode>();
 	private Stack<ElementMemory> attrStack = new Stack<ElementMemory>();
 	private DirectiveRepository directiveRepository;
-	private JangularCompiler compiler;
+	private ConcreteTemplateCompiler compiler;
 	
-	public CompilerMarkupHandler(JangularCompiler compiler, MarkupParsingConfiguration conf, DirectiveRepository directiveRepository) {
+	public CompilerMarkupHandler(ConcreteTemplateCompiler compiler, MarkupParsingConfiguration conf, DirectiveRepository directiveRepository) {
 		super(conf);
 		this.compiler = compiler;
 		this.directiveRepository = directiveRepository;

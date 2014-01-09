@@ -7,9 +7,7 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.compiler.CompiledTemplate;
-import net.cupmanager.jangular.compiler.CompilerConfiguration;
-import net.cupmanager.jangular.compiler.JangularCompiler;
-import net.cupmanager.jangular.nodes.JangularNode;
+import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
 
 import org.attoparser.AttoParseException;
 import org.junit.Assert;
@@ -38,7 +36,7 @@ public class RepeatTest {
 	@Test
 	public void basic() throws ParserConfigurationException, SAXException, AttoParseException {
 		String template = "<div j-repeat=\"item in items\">{{$index}}: {{item.title}}</div>";
-		CompiledTemplate compiled = new JangularCompiler(CompilerConfiguration.create())
+		CompiledTemplate compiled = ConcreteTemplateCompiler.create()
 			.compile(new ByteArrayInputStream(template.getBytes()), RepeatTestScope.class);
 		
 		StringBuilder sb = new StringBuilder();
@@ -51,7 +49,7 @@ public class RepeatTest {
 	@Test
 	public void asTag() throws ParserConfigurationException, SAXException, AttoParseException {
 		String template = "<j-repeat for=\"item in items\">{{$index}}: {{item.title}}</j-repeat>";
-		CompiledTemplate compiled = new JangularCompiler(CompilerConfiguration.create())
+		CompiledTemplate compiled = ConcreteTemplateCompiler.create()
 			.compile(new ByteArrayInputStream(template.getBytes()), RepeatTestScope.class);
 		
 		StringBuilder sb = new StringBuilder();

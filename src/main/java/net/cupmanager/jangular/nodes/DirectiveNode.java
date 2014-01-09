@@ -155,12 +155,12 @@ public class DirectiveNode extends JangularNode {
 		this.valueCopier = valueCopierClass.newInstance();
 		
 		
-		Class<? extends Injector> injectorClass = Injector.createInjectorClass(session.getClassLoader(), directiveInstance.getClass(), evaluationContextClass);
+		Class<? extends Injector> injectorClass = Injector.createInjectorClass(session, directiveInstance.getClass(), evaluationContextClass);
 		this.injector = injectorClass.newInstance();
 	}
 	
 	
-	private Class<? extends Scope> createDirectiveScopeClass(JangularClassLoader classLoader) {
+	private Class<? extends Scope> createDirectiveScopeClass(ClassLoader classLoader) {
 		ClassWriter cw = new ClassWriter(0);
 		FieldVisitor fv;
 		MethodVisitor mv;
@@ -197,7 +197,7 @@ public class DirectiveNode extends JangularNode {
 			Class<? extends Scope> targetScopeClass, 
 			List<String> fieldNames, 
 			List<Class<?>> fieldTypes, 
-			JangularClassLoader classLoader){
+			ClassLoader classLoader){
 		
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;

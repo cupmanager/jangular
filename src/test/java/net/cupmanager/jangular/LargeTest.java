@@ -3,16 +3,17 @@ package net.cupmanager.jangular;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.annotations.Provides;
+import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
 import net.cupmanager.jangular.compiler.JangularCompiler;
 import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.injection.EvaluationContext;
-import net.cupmanager.jangular.nodes.JangularNode;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
 import net.cupmanager.jangular.util.MatchTableDirective;
 
@@ -51,18 +52,43 @@ public class LargeTest {
 				.withTemplateLoader(new FileTemplateLoader("templates/test", "templates/test/directives"))
 				.withContextClass(AppEvalContext.class);
 		
-		
-    	
-    	
         JangularCompiler compiler = new JangularCompiler(conf);
         
-    	long start = System.currentTimeMillis();
-		JangularNode node = compiler.compile("largetest.html", AppScope.class);
+		CompiledTemplate template = compiler.compile("largetest.html", AppScope.class);
+		System.out.println("Compile took " + template.getCompileDuration(TimeUnit.MILLISECONDS) + " ms");
+		template.printWarnings();
 		
+		// ----------
+		
+		AppEvalContext context = new AppEvalContext();
+		context.greeting = "Hejsan";
+		context.URL = "http://localhost/wahatever";
+		
+		AppScope scope = createScope();
+		
+		StringBuilder sb = new StringBuilder();
+		
+		// Warm-up
+		for( int i = 0; i < 100; i++ ) {
+			sb = new StringBuilder();
+			template.eval(scope, sb, context);
+		}
+		
+		// Benchmark! 
+		long start = System.currentTimeMillis();
+		int times = 100;
+		for( int i = 0; i < times; i++ ) {
+			sb = new StringBuilder();
+			template.eval(scope, sb, context);
+		}
 		long end = System.currentTimeMillis();
-		System.out.println("Compile took " + (end-start) + " ms");
 		
 		
+		System.out.println(sb);
+		System.out.println( (end-start)/(float)times + " ms per template" );
+    }
+
+	private static AppScope createScope() {
 		List<Integer> nrs = new ArrayList<Integer>();
 		for( int i = 0; i < 10; i++ ) {
 			nrs.add(i+1);
@@ -78,28 +104,6 @@ public class LargeTest {
 		
 		AppScope scope = new AppScope();
 		scope.items = _items;
-		StringBuilder sb = new StringBuilder();
-		
-		AppEvalContext context = new AppEvalContext();
-		context.greeting = "Hejsan";
-		context.URL = "http://localhost/wahatever";
-		
-		for( int i = 0; i < 1000; i++ ) {
-			sb = new StringBuilder();
-			node.eval(scope, sb, context);
-		}
-		
-		start = System.currentTimeMillis();
-		int times = 100;
-		for( int i = 0; i < times; i++ ) {
-			sb = new StringBuilder();
-			node.eval(scope, sb, context);
-		}
-		
-		end = System.currentTimeMillis();
-		
-		
-		System.out.println(sb);
-		System.out.println( (end-start)/(float)times + " ms per template" );
-    }
+		return scope;
+	}
 }

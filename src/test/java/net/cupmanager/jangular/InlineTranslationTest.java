@@ -2,16 +2,15 @@ package net.cupmanager.jangular;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.annotations.Provides;
+import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
 import net.cupmanager.jangular.compiler.JangularCompiler;
 import net.cupmanager.jangular.injection.EvaluationContext;
-import net.cupmanager.jangular.nodes.JangularNode;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
 
 import org.attoparser.AttoParseException;
@@ -24,7 +23,7 @@ public class InlineTranslationTest {
 	public static class TranslationTestScope extends Scope {}
 	
 	public static class TranslationTestEvalContext extends EvaluationContext {
-		public @Provides("Language") String lang = "en";
+		public @Provides("Language") String lang = "english";
 	}
 	
 	@Test
@@ -37,32 +36,19 @@ public class InlineTranslationTest {
         		.withDirectives(repo)
         		.withContextClass(TranslationTestEvalContext.class));
         
-    	long start = System.currentTimeMillis();
-    	String template = "<div>"+
+    	String html = "<div>"+
 		    "{{1+2}} [['Key.For.Translation']] {{2+2}} yes!"+
 		"</div>";
-		JangularNode node = compiler.compile(new ByteArrayInputStream(template.getBytes()), TranslationTestScope.class);
-		
-		long end = System.currentTimeMillis();
-		System.out.println("Compile took " + (end-start) + " ms");
-		
-		
-		List<Integer> nrs = new ArrayList<Integer>();
-		for( int i = 0; i < 10; i++ ) {
-			nrs.add(i+1);
-		}
-		
+		CompiledTemplate template = compiler.compile(new ByteArrayInputStream(html.getBytes()), TranslationTestScope.class);
+		System.out.println("Compile took " + template.getCompileDuration(TimeUnit.MILLISECONDS) + " ms");
 		
 		TranslationTestScope scope = new TranslationTestScope();
 		TranslationTestEvalContext context = new TranslationTestEvalContext();
 		
 		StringBuilder sb = new StringBuilder();
-		sb = new StringBuilder();
-		node.eval(scope, sb, context);
+		template.eval(scope, sb, context);
 		
-		end = System.currentTimeMillis();
-		
-		String expected = "<div>3 translated(Key.For.Translation) 4 yes!</div>";
+		String expected = "<div>3 translated(english,Key.For.Translation) 4 yes!</div>";
 		String actual = sb.toString();
 		Assert.assertEquals(expected, actual);
 		System.out.println(sb);

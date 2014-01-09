@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -15,6 +16,7 @@ import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.annotations.Inject;
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.annotations.TemplateText;
+import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
 import net.cupmanager.jangular.compiler.JangularCompiler;
 import net.cupmanager.jangular.injection.EvaluationContext;
@@ -89,20 +91,11 @@ public class TranslationTest {
         		.withDirectives(repo)
         		.withContextClass(TranslationTestEvalContext.class));
         
-    	long start = System.currentTimeMillis();
     	String template = "<div j-controller=\"net.cupmanager.jangular.TranslationTest$TranslationTestController\">"+
 		    "<test-translate name=\"informationalName\">Web.Page.InformationalText</test-translate>"+
 		"</div>";
-		JangularNode node = compiler.compile(new ByteArrayInputStream(template.getBytes()), TranslationTestScope.class);
-		
-		long end = System.currentTimeMillis();
-		System.out.println("Compile took " + (end-start) + " ms");
-		
-		
-		List<Integer> nrs = new ArrayList<Integer>();
-		for( int i = 0; i < 10; i++ ) {
-			nrs.add(i+1);
-		}
+		CompiledTemplate compiled = compiler.compile(new ByteArrayInputStream(template.getBytes()), TranslationTestScope.class);
+		System.out.println("Compile took " + compiled.getCompileDuration(TimeUnit.MILLISECONDS) + " ms");
 		
 		
 		TranslationTestScope scope = new TranslationTestScope();
@@ -110,9 +103,8 @@ public class TranslationTest {
 		
 		StringBuilder sb = new StringBuilder();
 		sb = new StringBuilder();
-		node.eval(scope, sb, context);
+		compiled.eval(scope, sb, context);
 		
-		end = System.currentTimeMillis();
 		
 		String expected = "<div>translated(Web.Page.InformationalText)</div>";
 		String actual = sb.toString();

@@ -4,35 +4,30 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.cupmanager.jangular.JangularClassLoader;
-
 import org.apache.commons.lang.ClassUtils;
 
 public class CompilerSession {
 	private List<String> warnings = new ArrayList<String>();
 	
-	private JangularClassLoader classLoader = new JangularClassLoader();
+	private ClassLoader classLoader;
 	
-	public JangularClassLoader getClassLoader() {
+	public CompilerSession(ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
+
+	public ClassLoader getClassLoader() {
 		return classLoader;
 	}
-	
-	public void printWarnings() {
-		if (!warnings.isEmpty()) {
-			System.err.println("The Jangular Compiler encountered the following warnings:\n");
-			int i = 1;
-			for( String warning : warnings ){
-				System.err.println(i + " - "+warning);
-				i++;
-			}
-		}
-	}
-	
 
+	
 	public void warn(String warning) {
 		warnings.add(warning);
 	}
-
+	
+	public List<String> getWarnings() {
+		return warnings;
+	}
+	
 	public void assertCasts(Field toField, Field fromField) {
 		Class<?> toFieldClass = ClassUtils.primitiveToWrapper(toField.getType());
 		Class<?> fromFieldClass = ClassUtils.primitiveToWrapper(fromField.getType());

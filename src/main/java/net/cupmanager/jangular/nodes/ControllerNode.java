@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import net.cupmanager.jangular.AbstractController;
-import net.cupmanager.jangular.JangularClassLoader;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.compiler.CompilerSession;
@@ -135,7 +134,7 @@ public class ControllerNode extends JangularNode {
 		this.valueCopier = valueCopierClass.newInstance();
 		
 
-		Class<? extends Injector> injectorClass = Injector.createInjectorClass(session.getClassLoader(), controllerClass, evaluationContextClass);
+		Class<? extends Injector> injectorClass = Injector.createInjectorClass(session, controllerClass, evaluationContextClass);
 		this.injector = injectorClass.newInstance();
 	}
 	
@@ -204,7 +203,7 @@ public class ControllerNode extends JangularNode {
 			Collection<String> fieldNames,
 			Class<? extends Scope> targetScopeClass, 
 			Class<? extends Scope> parentScopeClass,
-			JangularClassLoader classLoader) throws NoSuchFieldException, SecurityException{
+			ClassLoader classLoader) throws NoSuchFieldException, SecurityException{
 		
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;

@@ -2,8 +2,6 @@ package net.cupmanager.jangular.compiler;
 
 import java.lang.reflect.Field;
 
-import net.cupmanager.jangular.JangularClassLoader;
-
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -11,33 +9,28 @@ import org.objectweb.asm.Type;
 public class JangularCompilerUtils {
 	
 	@SuppressWarnings("unchecked")
-	public static <T> Class<T> loadScopeClass(JangularClassLoader classLoader, byte[] b, String className) {
-		
-		return classLoader.defineClassX(className, b, 0, b.length);
-		
-//		Class<T> clazz = null;
-//		try {
-//			ClassLoader loader = ClassLoader.getSystemClassLoader();
-//			
-//			Class<ClassLoader> cls = (Class<ClassLoader>) Class.forName("java.lang.ClassLoader");
-//			Method method = cls.getDeclaredMethod(
-//					"defineClass", new Class[] { String.class, byte[].class,
-//							int.class, int.class });
-//
-//			
-//			method.setAccessible(true);
-//			try {
-//				Object[] args = new Object[] { className, b, new Integer(0),
-//						new Integer(b.length) };
-//				clazz = ((Class<T>) method.invoke(loader, args));
-//			} finally {
-//				method.setAccessible(false);
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			System.exit(1);
-//		}
-//		return (Class<T>) clazz;
+	public static <T> Class<T> loadScopeClass(ClassLoader classLoader, byte[] b, String className) {
+		// override classDefine (as it is protected) and define the class.
+		Class<T> clazz = null;
+		try {
+			Class<?> cls = Class.forName("java.lang.ClassLoader");
+			java.lang.reflect.Method method = cls.getDeclaredMethod(
+					"defineClass", new Class[] { String.class, byte[].class, int.class, int.class });
+
+			// protected method invocaton
+			method.setAccessible(true);
+			try {
+				Object[] args = new Object[] { className, b, new Integer(0),
+						new Integer(b.length) };
+				clazz = (Class<T>) method.invoke(classLoader, args);
+			} finally {
+				method.setAccessible(false);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return clazz;
 	}
 	
 	public static void checkcast(Field toField, Field fromField, MethodVisitor mv) {

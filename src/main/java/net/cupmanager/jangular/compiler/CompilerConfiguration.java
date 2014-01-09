@@ -19,6 +19,7 @@ public class CompilerConfiguration {
 	private AbstractTemplateLoader templateLoader;
 	private Class<? extends EvaluationContext> contextClass;
 	private ClassLoader classLoader;
+	private CompilerCache cache;
 	
 	private CompilerConfiguration() {}
 	
@@ -27,6 +28,17 @@ public class CompilerConfiguration {
 		this.templateLoader = new NullTemplateLoader();
 		this.contextClass = EmptyEvaluationContext.class;
 		this.classLoader = new JangularClassLoader();
+		this.cache = new NullCompilerCache();
+	}
+	
+	private CompilerConfiguration copy() {
+		CompilerConfiguration cc = new CompilerConfiguration();
+		cc.repo = repo;
+		cc.templateLoader = templateLoader;
+		cc.contextClass = contextClass;
+		cc.classLoader = classLoader;
+		cc.cache = cache;
+		return cc;
 	}
 	
 	
@@ -54,16 +66,16 @@ public class CompilerConfiguration {
 		return cc;
 	}
 	
-	
-	private CompilerConfiguration copy() {
-		CompilerConfiguration cc = new CompilerConfiguration();
-		cc.repo = repo;
-		cc.templateLoader = templateLoader;
-		cc.contextClass = contextClass;
-		cc.classLoader = classLoader;
+	public CompilerConfiguration withCache(CompilerCache cache) {
+		CompilerConfiguration cc = copy();
+		cc.cache = cache;
 		return cc;
 	}
-
+	
+	
+	
+	
+	
 	public AbstractTemplateLoader getTemplateLoader() {
 		return templateLoader;
 	}
@@ -80,5 +92,8 @@ public class CompilerConfiguration {
 		return classLoader;
 	}
 	
+	public CompilerCache getCache() {
+		return cache;
+	}
 	
 }

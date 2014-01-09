@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -32,36 +33,45 @@ public class JangularCompiler {
 		this.conf = conf;
 	}
 	
-	public CompositeNode compile(String templatePath) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
+	public CompiledTemplate compile(String templatePath) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
 		return compile(templatePath, Scope.class);
 	}
 	
+	public CompiledTemplate compile(String templatePath, Class<? extends Scope> scopeClass) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
+		CompiledTemplate cached = conf.getCache().get(templatePath);
+		if (cached != null) {
+			return cached;
+		} else {
+			AbstractTemplateLoader templateLoader = conf.getTemplateLoader();
+			InputStream is = templateLoader.loadTemplate(templatePath);
+			CompiledTemplate compiled = compile(is, scopeClass);
+			conf.getCache().save(templatePath, compiled);
+			return compiled;
+		}
+	}
 	
-	public CompositeNode compile(InputStream is)  throws ParserConfigurationException, SAXException, AttoParseException {
+	
+	public CompiledTemplate compile(InputStream is)  throws ParserConfigurationException, SAXException, AttoParseException {
 		return compile(is, Scope.class);
 	}
-	
-	
-	public CompositeNode compile(String templatePath, Class<? extends Scope> scopeClass) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
-		AbstractTemplateLoader templateLoader = conf.getTemplateLoader();
-		InputStream is = templateLoader.loadTemplate(templatePath);
-		return compile(is, scopeClass);
-	}
-	
-
-	public CompositeNode compile(InputStream is, Class<? extends Scope> scopeClass)  throws ParserConfigurationException, SAXException, AttoParseException {
-		CompilerSession session = new CompilerSession();
+	public CompiledTemplate compile(InputStream is, Class<? extends Scope> scopeClass)  throws ParserConfigurationException, SAXException, AttoParseException {
+		CompilerSession session = new CompilerSession(conf.getClassLoader());
+		
+		long start = System.currentTimeMillis();
 		CompositeNode n = internalCompile(is);
 		try {
 			n.compileScope(scopeClass, conf.getContextClass(), session);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+		long end = System.currentTimeMillis();
 		
-		session.printWarnings();
-		
-		return n;
+		CompiledTemplate compiledTemplate = new CompiledTemplate(n);
+		compiledTemplate.setDuration(end-start, TimeUnit.MILLISECONDS);
+		compiledTemplate.setWarnings(session.getWarnings());
+		return compiledTemplate;
 	}
+	
 	
 	CompositeNode internalCompile(InputStream is) throws ParserConfigurationException, SAXException, AttoParseException {
 		IAttoParser parser = new MarkupAttoParser();

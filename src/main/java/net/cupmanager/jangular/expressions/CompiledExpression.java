@@ -2,7 +2,6 @@ package net.cupmanager.jangular.expressions;
 
 import java.util.Collection;
 
-import net.cupmanager.jangular.JangularClassLoader;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
@@ -59,7 +58,7 @@ public abstract class CompiledExpression {
 	private static int compiledExpressionSuffix = 0;
 	
 
-	private static CompiledExpression generateByteCode(JangularClassLoader classLoader, Class<? extends Scope> scopeClass, String expression) throws NoSuchFieldException, SecurityException{
+	private static CompiledExpression generateByteCode(ClassLoader classLoader, Class<? extends Scope> scopeClass, String expression) throws NoSuchFieldException, SecurityException{
 		
 		String className = "CompiledExpression_" + scopeClass.getSimpleName() + "_" + (compiledExpressionSuffix++);
 		String parentClassName = Type.getInternalName(scopeClass);

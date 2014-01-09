@@ -4,9 +4,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.cupmanager.jangular.JangularClassLoader;
 import net.cupmanager.jangular.annotations.Inject;
 import net.cupmanager.jangular.annotations.Provides;
+import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
 
 import org.objectweb.asm.ClassWriter;
@@ -27,7 +27,11 @@ public abstract class Injector {
 	
 	
 	private static int injectorClassSuffix = 0;
-	public static Class<? extends Injector> createInjectorClass(JangularClassLoader classLoader, Class<?> targetClass, Class<? extends EvaluationContext> evaluationContextClass) {
+	public static Class<? extends Injector> createInjectorClass(
+			CompilerSession session, 
+			Class<?> targetClass, 
+			Class<? extends EvaluationContext> evaluationContextClass) {
+		
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
 
@@ -63,14 +67,21 @@ public abstract class Injector {
 		List<InjectableField> fields = Injector.getInjectableFields(targetClass);
 		
 		for (InjectableField field : fields) {
-			Type type = Type.getType(field.type);
-			mv.visitVarInsn(Opcodes.ALOAD, 3);
-			mv.visitVarInsn(Opcodes.ALOAD, 4);
-			
 			// What's the field name in the evaluation context?
 			String sourceFieldName = Injector.getProvidedFieldName(evaluationContextClass, field);
-			mv.visitFieldInsn(Opcodes.GETFIELD, Type.getInternalName(evaluationContextClass), sourceFieldName, type.getDescriptor());
-			mv.visitFieldInsn(Opcodes.PUTFIELD, Type.getInternalName(targetClass), field.name, type.getDescriptor());
+			if (sourceFieldName != null) {
+				Type type = Type.getType(field.type);
+				mv.visitVarInsn(Opcodes.ALOAD, 3);
+				mv.visitVarInsn(Opcodes.ALOAD, 4);
+				
+				mv.visitFieldInsn(Opcodes.GETFIELD, Type.getInternalName(evaluationContextClass), sourceFieldName, type.getDescriptor());
+				mv.visitFieldInsn(Opcodes.PUTFIELD, Type.getInternalName(targetClass), field.name, type.getDescriptor());
+			} else {
+				session.warn(String.format("The context class %s has no @Provides for [%s with context '%s']. "+
+							"Will not inject '%s' in %s",
+							evaluationContextClass, field.type, field.context,
+							field.name, targetClass));
+			}
 		}
 		
 		mv.visitInsn(Opcodes.RETURN);
@@ -80,7 +91,7 @@ public abstract class Injector {
 		cw.visitEnd();
 		
 		
-		return JangularCompilerUtils.loadScopeClass(classLoader, cw.toByteArray(), className);
+		return JangularCompilerUtils.loadScopeClass(session.getClassLoader(), cw.toByteArray(), className);
 	}
 	
 	

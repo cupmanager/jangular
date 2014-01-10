@@ -55,6 +55,8 @@ Items for John Doe:
 
 
 ### Expressions
+We use the [MVEL library](http://mvel.codehaus.org/) to parse and execute expressions. This includes expressions inside ```{{...}}```, ```j-if``` and the part of ```j-repeat``` after ```ìn```.
+
 
 - - -
 Usage in Java
@@ -345,7 +347,7 @@ Choose an item:
 Inline directives can be used to extend the syntax within elements. Jangular uses the syntax with double curly braces for expressions: {{....}}
 You can use inline directives to come up with your own syntax for doing something else. For example, you could introduce a syntax with double brackets for translating text. So that ```[['Web.Page.Welcome']]``` would produce ```Välkommen``` in Swedish.
 
-See the InlineTranslationTest class for an example (src/test/java/net/cupmanager/jangular/util/InlineTranslationTest.java)
+See the InlineTranslationTest class for an example of this (in src/test/java/net/cupmanager/jangular/util/InlineTranslationTest.java)
 
 
 - - - 

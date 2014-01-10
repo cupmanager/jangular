@@ -8,7 +8,14 @@ Current status: Really super-early experimental alpha
 Send questions to jangular@cupmanager.net
 
 
-Todo
+Key points
+-------------
+* Uses XML syntax. Your template can be edited in any XML/HTML editor and you can easily keep it correctly balanced
+* You can write directives that extend HTML with new tags. Directives are like isolated, reusable components!
+* Dependency injection. We'll inject contextual variables into your directives/controllers for you!  
+* Pretty fast. We use [MVEL library](http://mvel.codehaus.org/) for expressions and generate Java bytecode for fast property accessing and scope creation.
+
+Informal todo
 -------------
 * [FIXED] Caching system. Also including a GuavaCachingStrategy
 * Repository for controllers? Or at least specify package names to look in.

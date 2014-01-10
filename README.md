@@ -80,9 +80,10 @@ Compiling turns the template into a series of very efficient steps ready for eva
 
 You probably want to store your templates as files rather than strings in your code. If you move the actual template (```<div>{{1+1}} == 2</div>```) to a file called ```templates/template.html```, we can specify a TemplateLoader that tells Jangular how to find the template. The following code will produce output equivalent the to minimal example above:
 ```java
-CompiledTemplate template = ConcreteTemplateCompiler.create()
-    .withTemplateLoader(new FileTemplateLoader("templates"))
-    .compile("template.html");
+CompiledTemplate template = ConcreteTemplateCompiler.create(
+	CompilerConfiguration.create()
+		.withTemplateLoader(new FileTemplateLoader("templates")))
+	.compile("template.html");
 
 StringBuilder sb = new StringBuilder();
 template.eval(sb);
@@ -92,9 +93,10 @@ Note that we also stored the compiled template to the ```template``` variable so
 
 You can of course also reuse the step just before ```compile()``` which is called a Compiler. Take a look at this code:
 ```java
-TemplateCompiler compiler = ConcreteTemplateCompiler.create()
-    .withTemplateLoader(new FileTemplateLoader("templates"));
-    
+TemplateCompiler compiler = ConcreteTemplateCompiler.create(
+	CompilerConfiguration.create()
+		.withTemplateLoader(new FileTemplateLoader("templates")));
+
 CompiledTemplate template = compiler.compile("template.html");
 CompiledTemplate other = compiler.compile("other.html");
 
@@ -135,8 +137,9 @@ Info:
 
 Usage:
 ```java
-TemplateCompiler compiler = ConcreteTemplateCompiler.create()
-    .withTemplateLoader(new FileTemplateLoader("templates"));
+TemplateCompiler compiler = ConcreteTemplateCompiler.create(
+	CompilerConfiguration.create()
+		.withTemplateLoader(new FileTemplateLoader("templates")));
     
 CompiledTemplate template = compiler.compile("controller-example.html");
 
@@ -173,8 +176,9 @@ public class ExampleScope extends Scope {
 
 ....
 
-TemplateCompiler compiler = ConcreteTemplateCompiler.create()
-    .withTemplateLoader(new FileTemplateLoader("templates"));
+TemplateCompiler compiler = ConcreteTemplateCompiler.create(
+	CompilerConfiguration.create()
+		.withTemplateLoader(new FileTemplateLoader("templates")));
     
 CompiledTemplate template = compiler.compile("controller-example.html", ExampleScope.class);
 
@@ -233,9 +237,10 @@ public class UserExampleContext extends EvaluationContext {
 
 .....
 
-TemplateCompiler compiler = ConcreteTemplateCompiler.create()
-    .withTemplateLoader(new FileTemplateLoader("templates"))
-    .withContextClass(UserExampleContext.class);
+TemplateCompiler compiler = ConcreteTemplateCompiler.create(
+	CompilerConfiguration.create()
+		.withTemplateLoader(new FileTemplateLoader("templates"))
+		.withContextClass(UserExampleContext.class));
     
 CompiledTemplate template = compiler.compile("controller-example.html");
 
@@ -261,13 +266,109 @@ Info:
 Just like in AngularJS you can create directives, which are isolated and reusable components. Directives come in two forms, regular and inline. 
 
 #### Regular directives
+Regular directives can be thought of as a special element that you can use in your template. For example:
+```html
+Choose an item: 
+<example-dropdown options="myOptions"></example-dropdown>
+```
 
+You can write a Java class that specifies how to replace this kind of element like this:
+```java
+@Directive("example-dropdown")
+@Template("exampleDropdown.html")
+public class ExampleDropdownDirective extends AbstractDirective<ExampleDropdownDirectiveScope> {
+	public @Context User user;
+	
+	public static class ExampleDropdownDirectiveScope extends Scope {
+		@In public List<String> options;
+	}
+	
+	@Override
+	public void compile(Map<String,String> attrs, JangularNode templateNode, JangularNode contentNode) {
+		
+	}
+	
+	@Override
+	public void eval(ExampleDropdownDirectiveScope scope) {
+		scope.options = new ArrayList<String>(scope.options);
+		scope.options.add(0, "Default option");
+	}
+}
+```
+
+And the exampleDropdown.html:
+```html
+<select>
+	<option j-repeat="option in options">{{option}}</option>
+</select>
+```
+
+A few things to note:
+* You can @Inject things just like in a controller
+* The directive template can only access the fields you specify as parameters, or expose on the directive scope. The directive scope is always isolated and does not inherit fields from the outside.
+* Your scope class can contain fields annotated with @In. They will be filled with the value from the parent scope (in this case as specified by the attributes)
+
+Running it: You have to register the directive class so Jangular knows about it using the withDirectives() method on the compiler:
+```java
+DirectiveRepository repo = new DirectiveRepository();
+repo.register(ExampleDropdownDirective.class);
+
+CompilerConfiguration conf = CompilerConfiguration.create()
+		.withDirectives(repo)
+    .withTemplateLoader(new FileTemplateLoader("templates"))
+    .withContextClass(DirectiveExampleContext.class);
+
+TemplateCompiler compiler = ConcreteTemplateCompiler.create(conf);
+
+CompiledTemplate template = compiler.compile("controller-example.html");
+
+DirectiveExampleContext context = new DirectiveExampleContext();
+context.options = generateOptions();
+
+StringBuilder sb = new StringBuilder();
+template.eval(sb, context);
+String result = sb.toString();
+```
+
+All of this will produce:
+```html
+Choose an item: 
+<select>
+	<option>Default option</option>
+	<option>Apple</option>
+	<option>Banana</option>
+	<option>Orange</option>
+</select>
+```
+
+#### Inline directives
+Inline directives can be used to extend the syntax within elements. Jangular uses the syntax with double curly braces for expressions: {{....}}
+You can use inline directives to come up with your own syntax for doing something else. For example, you could introduce a syntax with double brackets for translating text. So that ```[['Web.Page.Welcome']]``` would produce ```Välkommen``` in Swedish.
+
+See the InlineTranslationTest class for an example (src/test/java/net/cupmanager/jangular/util/InlineTranslationTest.java)
 
 
 - - - 
 ### Caching
+You can tell Jangular to cache the compilations of templates. We provide you with an implementation that uses Guava's Cache, but you can easily write your own adapter for another caching system.
 
+Code example:
+```java
+	CompilerConfiguration conf = CompilerConfiguration.create()
+		.withDirectives(repo)
+		.withTemplateLoader(new FileTemplateLoader("templates/test", "templates/test/directives"));
 
+	TemplateCompiler compiler = ConcreteTemplateCompiler.create(conf)
+		.cached(new GuavaCachingStrategy(CacheBuilder.newBuilder().maximumSize(1000)));
+  
+	CompiledTemplate template = compiler.compile("test.html", AppScope.class);
+	
+	/* These will hit the cache immediately */
+	template = compiler.compile("test.html", AppScope.class);
+	template = compiler.compile("test.html", AppScope.class);
+	template = compiler.compile("test.html", AppScope.class);
+	template = compiler.compile("test.html", AppScope.class);
+```
 
-
+You can write your own caching strategy by extending the CachingStrategy interface, see the GuavaCachingStrategy for an example (it will be called by a CachingTemplateCompiler in Jangular)
 

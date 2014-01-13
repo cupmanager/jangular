@@ -15,6 +15,7 @@ Key points
 * Dependency injection. We'll inject contextual variables into your directives/controllers for you!  
 * Pretty fast. We use the [MVEL library](http://mvel.codehaus.org/) for expressions and generate Java bytecode for fast property accessing and scope creation.
 
+
 Informal todo
 -------------
 * Repository for controllers? Or at least specify package names to look in.

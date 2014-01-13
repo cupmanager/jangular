@@ -58,8 +58,7 @@ public class LargeTest {
 				.withTemplateLoader(new FileTemplateLoader("templates/test", "templates/test/directives"))
 				.withContextClass(AppEvalContext.class);
 		
-        TemplateCompiler compiler = ConcreteTemplateCompiler.create()
-        		.withConfig(conf)
+        TemplateCompiler compiler = ConcreteTemplateCompiler.create(conf)
             	.cached(new GuavaCachingStrategy(CacheBuilder.newBuilder().maximumSize(1000)));
         
 		CompiledTemplate template = compiler.compile("largetest.html", AppScope.class);
@@ -120,5 +119,9 @@ public class LargeTest {
 		AppScope scope = new AppScope();
 		scope.items = _items;
 		return scope;
+	}
+	
+	public static void main(String[] args) throws CompileException, EvaluationException {
+		new LargeTest().pleaseDontCrash();
 	}
 }

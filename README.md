@@ -13,18 +13,19 @@ Key points
 * Uses XML syntax. Your template can be edited in any XML/HTML editor and you can easily keep it correctly balanced
 * You can write directives that extend HTML with new tags. Directives are like isolated, reusable components!
 * Dependency injection. We'll inject contextual variables into your directives/controllers for you!  
-* Pretty fast. We use [MVEL library](http://mvel.codehaus.org/) for expressions and generate Java bytecode for fast property accessing and scope creation.
+* Pretty fast. We use the [MVEL library](http://mvel.codehaus.org/) for expressions and generate Java bytecode for fast property accessing and scope creation.
 
 Informal todo
 -------------
-* [FIXED] Caching system. Also including a GuavaCachingStrategy
 * Repository for controllers? Or at least specify package names to look in.
+* Directives as attributes and some transclude functionality?
+* How to handle that template files change on disk?
+* Directives/controllers should be able to only generate data for the fields that will actually be used in the template
+* [FIXED] Caching system. Also including a GuavaCachingStrategy
 * [FIXED] Specify where Jangular should look for template files
-* Tests & Documentation
 * [FIXED] Maybe compile() shouldn't return a node, but rather an object that holds both the node and the CompilerSession
 * [FIXED] Translations. Can be implemented as directives / inline-directives 
 * [FIXED] Will the generated classes ever disappear or will we eat memory until we die? 
-* Directives as attributes and some transclude functionality?
 
 
 Syntax

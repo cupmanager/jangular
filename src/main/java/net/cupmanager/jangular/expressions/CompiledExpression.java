@@ -1,5 +1,6 @@
 package net.cupmanager.jangular.expressions;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 
 import net.cupmanager.jangular.Scope;
@@ -43,6 +44,11 @@ public abstract class CompiledExpression {
 		expression = expression.trim();
 		ExecutableStatement compiledExpression;
 		try {
+			pc.setStrictTypeEnforcement(true);
+			pc.addInput("this", scopeClass);
+			for (Field f : scopeClass.getFields()) {
+				pc.addInput(f.getName(), f.getType());
+			}
 			compiledExpression = (ExecutableStatement)MVEL.compileExpression(expression, pc);
 		} catch (CompileException e ) {
 			throw new CompileExpressionException(e);

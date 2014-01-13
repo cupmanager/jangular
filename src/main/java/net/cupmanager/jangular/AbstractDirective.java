@@ -3,6 +3,7 @@ package net.cupmanager.jangular;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.nodes.JangularNode;
 
 public abstract class AbstractDirective<T extends Scope> {
@@ -25,7 +26,7 @@ public abstract class AbstractDirective<T extends Scope> {
 		return null;
 	}
 	
-	public void eval(T scope) {
+	public void eval(T scope) throws EvaluationException {
 		
 	}
 }

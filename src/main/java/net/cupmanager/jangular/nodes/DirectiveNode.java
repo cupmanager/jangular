@@ -14,6 +14,9 @@ import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
+import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException;
+import net.cupmanager.jangular.exceptions.CompileExpressionException;
+import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.expressions.CompiledExpression;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.injection.Injector;
@@ -52,7 +55,7 @@ public class DirectiveNode extends JangularNode {
 	private Injector injector;
 	
 	
-	public DirectiveNode(AbstractDirective<?> directiveInstance, JangularNode node, Map<String, String> attrs) {
+	public DirectiveNode(AbstractDirective<?> directiveInstance, JangularNode node, Map<String, String> attrs) throws CompileExpressionException {
 		this.directiveInstance = directiveInstance;
 		this.node = node;
 		
@@ -62,9 +65,7 @@ public class DirectiveNode extends JangularNode {
 		this.hasDirectiveScope = directiveInstance.getScopeClass() != null;
 		
 		for( String variable : attrs.keySet() ) {
-			ParserContext pc = new ParserContext();
-			MVEL.analyze(attrs.get(variable), pc);
-			variables.addAll(pc.getInputs().keySet());
+			variables.addAll(CompiledExpression.getReferencedVariables(attrs.get(variable)));
 		}
 	}
 	
@@ -96,7 +97,8 @@ public class DirectiveNode extends JangularNode {
 	
 
 	@Override
-	public void eval(final Scope scope, StringBuilder sb, EvaluationContext context) {
+	public void eval(final Scope scope, StringBuilder sb, EvaluationContext context) 
+			throws EvaluationException {
 		
 		Object[] inValues = new Object[inExpressions.length];
 		for (int i = 0; i < inValues.length; i++ ) {
@@ -113,13 +115,15 @@ public class DirectiveNode extends JangularNode {
 			}
 			
 			node.eval(nodeScope, sb, context);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		} catch (InstantiationException e) {
+			throw new EvaluationException(this, e);
+		} catch (IllegalAccessException e) {
+			throw new EvaluationException(this, e);
+		} 
 	}
 
 	@Override
-	public Collection<String> getReferencedVariables() {
+	public Collection<String> getReferencedVariables() throws CompileExpressionException {
 		nodeVariables = new ArrayList<String>(node.getReferencedVariables());
 		return variables;
 	}
@@ -129,7 +133,7 @@ public class DirectiveNode extends JangularNode {
 	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
 			Class<? extends EvaluationContext> evaluationContextClass,
-			CompilerSession session) throws Exception {
+			CompilerSession session) throws NoSuchScopeFieldException, CompileExpressionException {
 
 		List<String> fieldNames = null;
 		List<Class<?>> fieldTypes = null;
@@ -152,11 +156,17 @@ public class DirectiveNode extends JangularNode {
 		this.node.compileScope(directiveScopeClass, evaluationContextClass, session);
 		
 		Class<? extends DirectiveScopeValueCopier> valueCopierClass = createValueCopierClass(directiveScopeClass,fieldNames,fieldTypes,session.getClassLoader());
-		this.valueCopier = valueCopierClass.newInstance();
-		
-		
-		Class<? extends Injector> injectorClass = Injector.createInjectorClass(session, directiveInstance.getClass(), evaluationContextClass);
-		this.injector = injectorClass.newInstance();
+		try {
+			this.valueCopier = valueCopierClass.newInstance();
+				
+			Class<? extends Injector> injectorClass = Injector.createInjectorClass(session, directiveInstance.getClass(), evaluationContextClass);
+			this.injector = injectorClass.newInstance();
+			
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	

@@ -15,6 +15,8 @@ import net.cupmanager.jangular.annotations.TemplateText;
 import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
 import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
+import net.cupmanager.jangular.exceptions.CompileException;
+import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.JangularNode;
 
@@ -65,7 +67,7 @@ public class TranslationTest {
 		}
 
 		@Override
-		public void eval(TestTranslateDirectiveScope scope) {
+		public void eval(TestTranslateDirectiveScope scope) throws EvaluationException {
 			StringBuilder sb = new StringBuilder();
 			node.eval(scope, sb);
 			String key = sb.toString();
@@ -79,7 +81,7 @@ public class TranslationTest {
 	}
 	
 	@Test
-    public void main() throws FileNotFoundException, ParserConfigurationException, SAXException, AttoParseException
+    public void main() throws CompileException, EvaluationException
     {
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(TestTranslateDirective.class);

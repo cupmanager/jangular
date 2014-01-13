@@ -5,7 +5,9 @@ import java.util.Collection;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
+import net.cupmanager.jangular.exceptions.CompileExpressionException;
 
+import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
@@ -22,21 +24,29 @@ public abstract class CompiledExpression {
 	public abstract Object eval(Scope scope);
 	
 	
-	public static Collection<String> getReferencedVariables(String expression){
+	public static Collection<String> getReferencedVariables(String expression) throws CompileExpressionException{
 		ParserContext pc = new ParserContext();
-		MVEL.analyze(expression, pc);
+		try {
+			MVEL.analyze(expression, pc);
+		} catch (CompileException e ) {
+			throw new CompileExpressionException(e);
+		}
 		return pc.getInputs().keySet();
 	}
 	
-	public static CompiledExpression compile(String expression, Class<? extends Scope> scopeClass, CompilerSession session){
+	public static CompiledExpression compile(String expression, Class<? extends Scope> scopeClass, CompilerSession session) throws CompileExpressionException{
 		
 		ParserConfiguration conf = new ParserConfiguration();
 		conf.setClassLoader(session.getClassLoader());
 		ParserContext pc = new ParserContext(conf);
 		
 		expression = expression.trim();
-		
-		ExecutableStatement compiledExpression = (ExecutableStatement)MVEL.compileExpression(expression, pc);
+		ExecutableStatement compiledExpression;
+		try {
+			compiledExpression = (ExecutableStatement)MVEL.compileExpression(expression, pc);
+		} catch (CompileException e ) {
+			throw new CompileExpressionException(e);
+		}
 		
 		if( compiledExpression.isLiteralOnly() ) {
 			Object value = MVEL.executeExpression(compiledExpression);
@@ -48,7 +58,7 @@ public abstract class CompiledExpression {
 				return generateByteCode(session.getClassLoader(), scopeClass, expression);
 			} catch (Exception e) {
 				// Maybe some problem with types. That's okay, let MVEL handle it.
-				session.warn("CompiledExpression couldn't generate bytecode-class for expression \"\". " + e.getMessage());
+				session.warn("CompiledExpression couldn't generate bytecode-class for expression \""+expression+"\". Caused by:\n" + e);
 			}
 		}
 		

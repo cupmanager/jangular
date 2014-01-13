@@ -9,8 +9,12 @@ import java.util.Set;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
+import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException;
+import net.cupmanager.jangular.exceptions.CompileExpressionException;
+import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
+import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
@@ -62,7 +66,8 @@ public class RepeatNode extends JangularNode {
 	}
 	
 	@Override
-	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context)
+			throws EvaluationException {
 		try {
 			List<?> list = (List<?>)MVEL.executeExpression(listExpression, scope);
 			RepeatNodeScope nodeScope = nodeScopeClass.newInstance();
@@ -83,13 +88,15 @@ public class RepeatNode extends JangularNode {
 					i++;
 				}
 			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		} catch (InstantiationException e) {
+			throw new EvaluationException(node, e);
+		} catch (IllegalAccessException e) {
+			throw new EvaluationException(node, e);
+		} 
 	}
 
 	@Override
-	public Collection<String> getReferencedVariables() {
+	public Collection<String> getReferencedVariables() throws CompileExpressionException {
 		Set<String> variables = new HashSet<String>();
 		variables.addAll(node.getReferencedVariables());
 		
@@ -107,17 +114,23 @@ public class RepeatNode extends JangularNode {
 	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
 			Class<? extends EvaluationContext> evaluationContextClass,
-			CompilerSession session) throws Exception {
+			CompilerSession session) throws NoSuchScopeFieldException, CompileExpressionException {
 		
-		ParserConfiguration conf = new ParserConfiguration();
-		conf.setClassLoader(session.getClassLoader());
-		this.pc = new ParserContext(conf);
-		pc.withInput(varName, Iterable.class);
-		pc.setStrictTypeEnforcement(true);
-		pc.addInput("this", parentScopeClass);
-		this.listExpression = MVEL.compileExpression("" + listExpressionString , pc);
+		Class<?> varType;
 		
-		Class<?> varType = MVEL.analyze("this." + listVarName + ".get(0)", pc);
+		try {
+			ParserConfiguration conf = new ParserConfiguration();
+			conf.setClassLoader(session.getClassLoader());
+			this.pc = new ParserContext(conf);
+			pc.withInput(varName, Iterable.class);
+			pc.setStrictTypeEnforcement(true);
+			pc.addInput("this", parentScopeClass);
+			this.listExpression = MVEL.compileExpression("" + listExpressionString , pc);
+			
+			varType = MVEL.analyze("this." + listVarName + ".get(0)", pc);
+		} catch (CompileException e ) {
+			throw new CompileExpressionException(e);
+		}
 		
 		String className = "RepeatScope" + (repeatScopeSuffix++);
 		String parentClassName = parentScopeClass.getName().replace('.', '/');
@@ -131,8 +144,7 @@ public class RepeatNode extends JangularNode {
 
 	private Class<? extends RepeatNodeScope> createRepeatScopeClass(
 			Class<? extends Scope> parentScopeClass, CompilerSession session,
-			Class<?> varType, String className, String parentClassName)
-			throws NoSuchFieldException {
+			Class<?> varType, String className, String parentClassName) throws NoSuchScopeFieldException, CompileExpressionException {
 		ClassWriter cw = new ClassWriter(0);
 		FieldVisitor fv;
 		MethodVisitor mv;
@@ -146,9 +158,15 @@ public class RepeatNode extends JangularNode {
 		fv.visitEnd();
 		
 		for (String field : getReferencedVariables()) {
-			Type type = Type.getType(parentScopeClass.getField(field).getType());
-			fv = cw.visitField(Opcodes.ACC_PUBLIC, field, type.getDescriptor(), null, null);
-			fv.visitEnd();
+			try {
+				Type type = Type.getType(parentScopeClass.getField(field).getType());
+				fv = cw.visitField(Opcodes.ACC_PUBLIC, field, type.getDescriptor(), null, null);
+				fv.visitEnd();
+			} catch (NoSuchFieldException e) {
+				throw new NoSuchScopeFieldException(e);
+			} catch (SecurityException e) {
+				throw new NoSuchScopeFieldException(e);
+			}
 		}
 		
 		// CONSTRUCTOR
@@ -169,11 +187,17 @@ public class RepeatNode extends JangularNode {
 		mv.visitVarInsn(Opcodes.ASTORE, 4);
 		
 		for (String field : getReferencedVariables()) {
-			Type type = Type.getType(parentScopeClass.getField(field).getType());
-			mv.visitVarInsn(Opcodes.ALOAD, 0);
-			mv.visitVarInsn(Opcodes.ALOAD, 4);
-			mv.visitFieldInsn(Opcodes.GETFIELD, parentClassName, field, type.getDescriptor());
-			mv.visitFieldInsn(Opcodes.PUTFIELD, className, field, type.getDescriptor());
+			try {
+				Type type = Type.getType(parentScopeClass.getField(field).getType());
+				mv.visitVarInsn(Opcodes.ALOAD, 0);
+				mv.visitVarInsn(Opcodes.ALOAD, 4);
+				mv.visitFieldInsn(Opcodes.GETFIELD, parentClassName, field, type.getDescriptor());
+				mv.visitFieldInsn(Opcodes.PUTFIELD, className, field, type.getDescriptor());
+			} catch (NoSuchFieldException e) {
+				throw new NoSuchScopeFieldException(e);
+			} catch (SecurityException e) {
+				throw new NoSuchScopeFieldException(e);
+			}
 		}
 		mv.visitVarInsn(Opcodes.ALOAD, 0);
 		mv.visitVarInsn(Opcodes.ILOAD, 2);

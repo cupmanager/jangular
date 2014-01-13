@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 
 import net.cupmanager.jangular.DirectiveRepository;
 import net.cupmanager.jangular.DirectiveRepository.InlineDirectiveMatcher;
+import net.cupmanager.jangular.exceptions.AttoParseExceptionWrapper;
+import net.cupmanager.jangular.exceptions.ControllerNotFoundException;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.ConditionalNode;
 import net.cupmanager.jangular.nodes.ControllerNode;
@@ -143,7 +145,7 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 		}
 	}
 	
-	private void commonClose(String elementName, ElementMemory elementMemory, CompositeNode compositeNode) {
+	private void commonClose(String elementName, ElementMemory elementMemory, CompositeNode compositeNode) throws AttoParseException {
 		
 		compositeNode.optimize();
 		JangularNode node = compositeNode;
@@ -172,7 +174,11 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 			}
 		} else if ("j-controller".equals(elementName)) {
 			String controllerClassName = elementMemory.attrs.get("controller");
-			node = new ControllerNode(controllerClassName, node);
+			try {
+				node = new ControllerNode(controllerClassName, node);
+			} catch (ControllerNotFoundException e) {
+				throw new AttoParseExceptionWrapper(e);
+			}
 		} else if ("j-repeat".equals(elementName)) {
 			String repeatExpr = elementMemory.attrs.get("for");
 			node = new RepeatNode(repeatExpr, node);
@@ -184,7 +190,11 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 			}
 			
 			if (elementMemory.isController()) {
-				node = new ControllerNode(elementMemory.jcontroller, node);
+				try {
+					node = new ControllerNode(elementMemory.jcontroller, node);
+				} catch (ControllerNotFoundException e) {
+					throw new AttoParseExceptionWrapper(e); 
+				}
 			}
 			
 			if (elementMemory.isConditional()) {

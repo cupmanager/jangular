@@ -12,6 +12,10 @@ import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
 import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
+import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException;
+import net.cupmanager.jangular.exceptions.CompileExpressionException;
+import net.cupmanager.jangular.exceptions.ControllerNotFoundException;
+import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.injection.Injector;
 
@@ -42,20 +46,21 @@ public class ControllerNode extends JangularNode {
 	
 	
 	@SuppressWarnings("unchecked") 
-	public ControllerNode(String controllerClassName, JangularNode node) {
+	public ControllerNode(String controllerClassName, JangularNode node) throws ControllerNotFoundException {
 		try {
 			this.controllerClass = (Class<? extends AbstractController<?>>) Class.forName(controllerClassName);
 			this.node = node;
 			//this.controllerInstance = controllerClass.newInstance();
 			this.controllerScopeClass = AbstractController.getScopeClass(controllerClass);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		} catch (ClassNotFoundException e) {
+			throw new ControllerNotFoundException(controllerClassName, node, e);
+		} 
 	}
 	
 
 	@Override
-	public void eval(final Scope parentScope, StringBuilder sb, EvaluationContext context) {
+	public void eval(final Scope parentScope, StringBuilder sb, EvaluationContext context)
+			throws EvaluationException {
 		
 		try {
 			AbstractController controllerInstance = controllerClass.newInstance();
@@ -69,9 +74,11 @@ public class ControllerNode extends JangularNode {
 			controllerInstance.eval(nodeScope);
 			
 			node.eval(nodeScope, sb, context);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		} catch (InstantiationException e) {
+			throw new EvaluationException(this, e);
+		} catch (IllegalAccessException e) {
+			throw new EvaluationException(this, e);
+		} 
 	}
 	
 	private List<String> getControllerScopeIns() {
@@ -99,7 +106,7 @@ public class ControllerNode extends JangularNode {
 	}
 
 	@Override
-	public Collection<String> getReferencedVariables() {
+	public Collection<String> getReferencedVariables() throws CompileExpressionException {
 		Set<String> names = new HashSet<String>(node.getReferencedVariables());
 		
 		names.removeAll(getControllerScopeFields());
@@ -123,7 +130,7 @@ public class ControllerNode extends JangularNode {
 	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
 			Class<? extends EvaluationContext> evaluationContextClass,
-			CompilerSession session) throws Exception {
+			CompilerSession session) throws NoSuchScopeFieldException, CompileExpressionException {
 		this.dynamicControllerScopeClass = createDynamicControllerScopeClass(controllerScopeClass, parentScopeClass, session);
 
 		
@@ -132,17 +139,23 @@ public class ControllerNode extends JangularNode {
 		Class<? extends ControllerScopeValueCopier> valueCopierClass = 
 				createValueCopierClass(getReferencedVariables(),dynamicControllerScopeClass, parentScopeClass, 
 						session.getClassLoader());
-		this.valueCopier = valueCopierClass.newInstance();
 		
-
-		Class<? extends Injector> injectorClass = Injector.createInjectorClass(session, controllerClass, evaluationContextClass);
-		this.injector = injectorClass.newInstance();
+		try {
+			this.valueCopier = valueCopierClass.newInstance();
+			
+			Class<? extends Injector> injectorClass = Injector.createInjectorClass(session, controllerClass, evaluationContextClass);
+			this.injector = injectorClass.newInstance();
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	private Class<? extends Scope> createDynamicControllerScopeClass(
 			Class<? extends Scope> controllerScopeClass, 
 			Class<? extends Scope> parentScopeClass, 
-			CompilerSession session) {
+			CompilerSession session) throws CompileExpressionException, NoSuchScopeFieldException {
 		
 		ArrayList<String> fieldsInDynamicClass = new ArrayList<String>(getReferencedVariables());
 		
@@ -158,7 +171,14 @@ public class ControllerNode extends JangularNode {
 		/* FIELDS */
 		for (String fieldName : fieldsInDynamicClass) {
 			Field controllerField = getFieldSafe(controllerScopeClass, fieldName);
-			Field parentField = getFieldSafe(parentScopeClass, fieldName);
+			Field parentField;
+			try {
+				parentField = parentScopeClass.getField(fieldName);
+			} catch (NoSuchFieldException e) {
+				throw new NoSuchScopeFieldException(e);
+			} catch (SecurityException e) {
+				throw new NoSuchScopeFieldException(e);
+			}
 			
 			if (controllerField != null) {
 				// The field already exists in the controllerScope
@@ -204,7 +224,7 @@ public class ControllerNode extends JangularNode {
 			Collection<String> fieldNames,
 			Class<? extends Scope> targetScopeClass, 
 			Class<? extends Scope> parentScopeClass,
-			ClassLoader classLoader) throws NoSuchFieldException, SecurityException{
+			ClassLoader classLoader) throws NoSuchScopeFieldException {
 		
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
@@ -238,8 +258,15 @@ public class ControllerNode extends JangularNode {
 		mv.visitVarInsn(Opcodes.ASTORE, 4);
 		
 		for (String fieldName : fieldNames) {
-			Field targetField = getFieldSafe(targetScopeClass, fieldName);
-			Field parentField = getFieldSafe(parentScopeClass, fieldName);
+			Field targetField = getFieldSafe(targetScopeClass,fieldName);
+			Field parentField;
+			try {
+				parentField = parentScopeClass.getField(fieldName);
+			} catch (NoSuchFieldException e) {
+				throw new NoSuchScopeFieldException(e);
+			} catch (SecurityException e) {
+				throw new NoSuchScopeFieldException(e);
+			}
 			
 			mv.visitVarInsn(Opcodes.ALOAD, 3);
 			mv.visitVarInsn(Opcodes.ALOAD, 4);

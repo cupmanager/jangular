@@ -15,7 +15,12 @@ import net.cupmanager.jangular.annotations.TemplateText;
 import net.cupmanager.jangular.compiler.caching.CachingStrategy;
 import net.cupmanager.jangular.compiler.caching.CachingTemplateCompiler;
 import net.cupmanager.jangular.compiler.templateloader.AbstractTemplateLoader;
+import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
+import net.cupmanager.jangular.exceptions.AttoParseExceptionWrapper;
+import net.cupmanager.jangular.exceptions.CompileExpressionException;
+import net.cupmanager.jangular.exceptions.ControllerNotFoundException;
+import net.cupmanager.jangular.exceptions.ParseException;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.DirectiveNode;
 import net.cupmanager.jangular.nodes.JangularNode;
@@ -63,33 +68,31 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 	}
 	
 	@Override
-	public CompiledTemplate compile(String templatePath) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
+	public CompiledTemplate compile(String templatePath) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
 		return compile(templatePath, Scope.class);
 	}
 	
 	
 	@Override
-	public CompiledTemplate compile(String templatePath, Class<? extends Scope> scopeClass) throws ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException {
+	public CompiledTemplate compile(String templatePath, Class<? extends Scope> scopeClass) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
 		AbstractTemplateLoader templateLoader = conf.getTemplateLoader();
 		InputStream is = templateLoader.loadTemplate(templatePath);
 		CompiledTemplate compiled = compile(is, scopeClass);
 		return compiled;
 	}
 	
-	
-	public CompiledTemplate compile(InputStream is)  throws ParserConfigurationException, SAXException, AttoParseException {
+	public CompiledTemplate compile(InputStream is) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException{
 		return compile(is, Scope.class);
 	}
-	public CompiledTemplate compile(InputStream is, Class<? extends Scope> scopeClass)  throws ParserConfigurationException, SAXException, AttoParseException {
+	
+	public CompiledTemplate compile(InputStream is, Class<? extends Scope> scopeClass) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
 		CompilerSession session = new CompilerSession(conf.getClassLoader());
 		
 		long start = System.currentTimeMillis();
 		CompositeNode n = internalCompile(is);
-		try {
-			n.compileScope(scopeClass, conf.getContextClass(), session);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		
+		n.compileScope(scopeClass, conf.getContextClass(), session);
+		
 		long end = System.currentTimeMillis();
 		
 		CompiledTemplate compiledTemplate = new CompiledTemplate(n);
@@ -99,15 +102,22 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 	}
 	
 	
-	CompositeNode internalCompile(InputStream is) throws ParserConfigurationException, SAXException, AttoParseException {
+	CompositeNode internalCompile(InputStream is) throws ControllerNotFoundException, ParseException {
 		IAttoParser parser = new MarkupAttoParser();
 		
 		MarkupParsingConfiguration parserConf = new MarkupParsingConfiguration();
 		parserConf.setElementBalancing(ElementBalancing.REQUIRE_BALANCED);
 
 		CompilerMarkupHandler handler = new CompilerMarkupHandler(this, parserConf, conf.getRepo());
-		parser.parse(new InputStreamReader(is), handler);
-		
+		try {
+			parser.parse(new InputStreamReader(is), handler);
+		} catch (AttoParseException e) {
+			if( e instanceof AttoParseExceptionWrapper ){
+				((AttoParseExceptionWrapper)e).rethrowException();
+			} else {
+				throw new ParseException(e);
+			}
+		}
 		CompositeNode n = handler.getNode();
 		n.optimize();
 		return n;
@@ -131,7 +141,7 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 			return new ByteArrayInputStream(templateText.getBytes());
 			
 		} else {
-			throw new RuntimeException("Directive " + c.getName() + " doesn't have @Template or @TemplateText");
+			throw new TemplateLoaderException("Directive " + c.getName() + " doesn't have @Template or @TemplateText");
 		}
 	}
 	

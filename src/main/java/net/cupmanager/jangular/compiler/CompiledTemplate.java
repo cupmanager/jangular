@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import net.cupmanager.jangular.Evaluatable;
 import net.cupmanager.jangular.Scope;
+import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.JangularNode;
 
@@ -23,7 +24,8 @@ public class CompiledTemplate extends Evaluatable {
 	}
 
 	@Override
-	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) 
+			throws EvaluationException{
 		node.eval(scope, sb, context);
 	}
 

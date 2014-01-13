@@ -15,6 +15,8 @@ import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.compiler.caching.GuavaCachingStrategy;
 import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
+import net.cupmanager.jangular.exceptions.CompileException;
+import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
 import net.cupmanager.jangular.util.MatchTableDirective;
@@ -45,7 +47,7 @@ public class LargeTest {
 	}
 	
 	@Test
-    public void pleaseDontCrash() throws FileNotFoundException, ParserConfigurationException, SAXException, AttoParseException, TemplateLoaderException
+    public void pleaseDontCrash() throws CompileException, EvaluationException
     {
 		DirectiveRepository repo = new DirectiveRepository();
 		repo.register(MatchTableDirective.class);

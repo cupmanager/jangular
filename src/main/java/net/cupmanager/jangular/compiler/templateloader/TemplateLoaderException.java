@@ -2,7 +2,9 @@ package net.cupmanager.jangular.compiler.templateloader;
 
 import java.io.FileNotFoundException;
 
-public class TemplateLoaderException extends Exception {
+import net.cupmanager.jangular.exceptions.CompileException;
+
+public class TemplateLoaderException extends CompileException {
 
 	private static final long serialVersionUID = -3001898707409655007L;
 
@@ -10,7 +12,12 @@ public class TemplateLoaderException extends Exception {
 		super(e);
 	}
 
-	public TemplateLoaderException() {
+	public TemplateLoaderException(String message) {
+		super(message);
+	}
+
+	public TemplateLoaderException(Throwable cause) {
+		super(cause);
 	}
 
 }

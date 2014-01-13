@@ -8,6 +8,9 @@ import java.util.Set;
 
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.compiler.CompilerSession;
+import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException;
+import net.cupmanager.jangular.exceptions.CompileExpressionException;
+import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.expressions.CompiledExpression;
 import net.cupmanager.jangular.injection.EvaluationContext;
 
@@ -31,7 +34,8 @@ public class ConditionalNode extends JangularNode {
 	
 	
 	@Override
-	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context)
+			throws EvaluationException {
 		Boolean result = (Boolean) compiledCondition.eval(scope);
 		if (result) {
 			node.eval(scope, sb, context);
@@ -58,7 +62,7 @@ public class ConditionalNode extends JangularNode {
 
 
 	@Override
-	public Collection<String> getReferencedVariables() {
+	public Collection<String> getReferencedVariables() throws CompileExpressionException {
 		Set<String> vars = new HashSet<String>();
 		
 		vars.addAll(CompiledExpression.getReferencedVariables(condition));
@@ -79,7 +83,7 @@ public class ConditionalNode extends JangularNode {
 
 
 	@Override
-	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass, CompilerSession session) throws Exception {
+	public void compileScope(Class<? extends Scope> parentScopeClass, Class<? extends EvaluationContext> evaluationContextClass, CompilerSession session) throws NoSuchScopeFieldException, CompileExpressionException {
 		compiledCondition = CompiledExpression.compile(condition, parentScopeClass, session);
 		
 		if( elseIfNodes != null){

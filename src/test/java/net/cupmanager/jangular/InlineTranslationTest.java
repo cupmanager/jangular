@@ -11,6 +11,8 @@ import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
 import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
 import net.cupmanager.jangular.compiler.TemplateCompiler;
+import net.cupmanager.jangular.exceptions.CompileException;
+import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
 
@@ -28,7 +30,7 @@ public class InlineTranslationTest {
 	}
 	
 	@Test
-    public void main() throws FileNotFoundException, ParserConfigurationException, SAXException, AttoParseException
+    public void main() throws CompileException, EvaluationException
     {
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(InlineTranslationDirective.class);

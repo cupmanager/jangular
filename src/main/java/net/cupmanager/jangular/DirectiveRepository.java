@@ -25,7 +25,7 @@ public class DirectiveRepository {
 		}
 		
 		public Map<String,String> getAttributes() {
-			Map<String,String> attributes = new HashMap<>();
+			Map<String,String> attributes = new HashMap<String,String>();
 			Class<? extends Scope> scopeClass = AbstractDirective.getScopeClass(directiveClass);
 			for(String varName : Scope.getScopeIns(scopeClass) ) {
 				String value = matcher.group(varName);
@@ -51,8 +51,8 @@ public class DirectiveRepository {
 
 	}
 	
-	private Map<String, Class<? extends AbstractDirective<?>>> directives = new HashMap<>();
-	private List<InlineDirectiveItem> inlineDirectives = new ArrayList<>();
+	private Map<String, Class<? extends AbstractDirective<?>>> directives = new HashMap<String, Class<? extends AbstractDirective<?>>>();
+	private List<InlineDirectiveItem> inlineDirectives = new ArrayList<InlineDirectiveItem>();
 	
 	public void register(Class<? extends AbstractDirective<?>> directive) {
 		Directive a = directive.getAnnotation(Directive.class);
@@ -75,7 +75,7 @@ public class DirectiveRepository {
 	}
 	
 	public List<InlineDirectiveMatcher> getInlineDirectiveMatchers(String text) {
-		List<InlineDirectiveMatcher> matchers = new ArrayList<>();
+		List<InlineDirectiveMatcher> matchers = new ArrayList<InlineDirectiveMatcher>();
 		for( InlineDirectiveItem directive : inlineDirectives ){
 			Matcher m = directive.pattern.matcher(text);
 			matchers.add(new InlineDirectiveMatcher(m, directive.directiveClass));

@@ -24,7 +24,7 @@ public class RepeatTest {
 		public Item(String t) { title=t; }
 	}
 	public static class RepeatTestScope extends Scope {
-		public List<Item> items = new ArrayList<>();
+		public List<Item> items = new ArrayList<Item>();
 	}
 	
 	private static RepeatTestScope createScope() {

@@ -42,7 +42,7 @@ public class CompiledTemplate extends Evaluatable {
 	}
 	
 	public ArrayList<String> getWarnings() {
-		return new ArrayList<>(warnings);
+		return new ArrayList<String>(warnings);
 	}
 	public void printWarnings() {
 		if (!warnings.isEmpty()) {

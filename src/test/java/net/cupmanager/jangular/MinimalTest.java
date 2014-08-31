@@ -15,7 +15,7 @@ public class MinimalTest {
 	
 	@Test
 	public void basic() throws CompileException, EvaluationException {
-		String html = "<div>{{1+1}} == 2</div>";
+		String html = "<div>{=1+1} == 2</div>";
 		
 		CompiledTemplate template = ConcreteTemplateCompiler.create()
 			.compile(new ByteArrayInputStream(html.getBytes()));

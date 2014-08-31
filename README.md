@@ -37,11 +37,11 @@ Like AngularJS, Jangular templates are always (almost) valid XML. Our syntax con
 This is a small example of a Jangular template:
 ``` html
 <div>
-  <h1 j-if="shouldShowTitle">Welcome, {{user.name}}</h1>
+  <h1 j-if="shouldShowTitle">Welcome, {=user.name}</h1>
   You've bought the following items:
   <ul>
     <li j-repeat="item in items">
-      {{item.title}}
+      {=item.title}
     </li>
   </ul>
 </div>
@@ -50,9 +50,9 @@ This is a small example of a Jangular template:
 
 Jangular can also be used to generate plain text files by using the special attributes as elements instead:
 ```html
-<j-if test="shouldShowTitle">Items for {{user.name}}:</j-if>
+<j-if test="shouldShowTitle">Items for {=user.name}:</j-if>
 <j-repeat for="item in items">
-  {{$index+1}}. {{item.title}}
+  {=$index+1}. {=item.title}
 </j-repeat>
 ```
 Upon evaluation the ```j-``` tags will be removed and the output will be:
@@ -65,7 +65,7 @@ Items for John Doe:
 
 
 ### Expressions
-We use the [MVEL library](http://mvel.codehaus.org/) to parse and execute expressions. This includes expressions inside ```{{...}}```, ```j-if``` and the part of ```j-repeat``` after ```ìn```.
+We use the [MVEL library](http://mvel.codehaus.org/) to parse and execute expressions. This includes expressions inside ```{=...}```, ```j-if``` and the part of ```j-repeat``` after ```ìn```.
 
 
 - - -
@@ -74,7 +74,7 @@ Usage in Java
 
 This is a minimal example of how to invoke Jangular:
 ```java
-String html = "<div>{{1+1}} == 2</div>";
+String html = "<div>{=1+1} == 2</div>";
 
 StringBuilder sb = new StringBuilder();    
 ConcreteTemplateCompiler.create()
@@ -90,7 +90,7 @@ Compiling turns the template into a series of very efficient steps ready for eva
 
 
 
-You probably want to store your templates as files rather than strings in your code. If you move the actual template (```<div>{{1+1}} == 2</div>```) to a file called ```templates/template.html```, we can specify a TemplateLoader that tells Jangular how to find the template. The following code will produce output equivalent the to minimal example above:
+You probably want to store your templates as files rather than strings in your code. If you move the actual template (```<div>{=1+1} == 2</div>```) to a file called ```templates/template.html```, we can specify a TemplateLoader that tells Jangular how to find the template. The following code will produce output equivalent the to minimal example above:
 ```java
 CompiledTemplate template = ConcreteTemplateCompiler.create(
 	CompilerConfiguration.create()
@@ -143,7 +143,7 @@ Template (controller-example.html):
 ```html
 Info:
 <div j-controller="com.example.controllers.ExampleCtrl">
-  {{info}}
+  {=info}
 </div>
 ```
 
@@ -176,7 +176,7 @@ Template (controller-example.html):
 ```html
 Info:
 <div>
-  {{info}}
+  {=info}
 </div>
 ```
 
@@ -237,7 +237,7 @@ Template (user-example.html):
 ```html
 Info:
 <div j-controller="com.example.controllers.UserCtrl">
-  You've logged in {{loginCount}} times!
+  You've logged in {=loginCount} times!
 </div>
 ```
 
@@ -311,7 +311,7 @@ public class ExampleDropdownDirective extends AbstractDirective<ExampleDropdownD
 And the exampleDropdown.html:
 ```html
 <select>
-	<option j-repeat="option in options">{{option}}</option>
+	<option j-repeat="option in options">{=option}</option>
 </select>
 ```
 
@@ -354,7 +354,7 @@ Choose an item:
 ```
 
 #### Inline directives
-Inline directives can be used to extend the syntax within elements. Jangular uses the syntax with double curly braces for expressions: {{....}}
+Inline directives can be used to extend the syntax within elements. Jangular uses curly braces and equality sign for expressions: {=....}
 You can use inline directives to come up with your own syntax for doing something else. For example, you could introduce a syntax with double brackets for translating text. So that ```[['Web.Page.Welcome']]``` would produce ```Välkommen``` in Swedish.
 
 See the InlineTranslationTest class for an example of this (in src/test/java/net/cupmanager/jangular/util/InlineTranslationTest.java)

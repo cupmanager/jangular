@@ -11,7 +11,7 @@ import net.cupmanager.jangular.annotations.TemplateText;
 import net.cupmanager.jangular.nodes.JangularNode;
 import net.cupmanager.jangular.util.InlineTranslationDirective.TranslationScope;
 
-@TemplateText("{{translation}}")
+@TemplateText("{=translation}")
 @InlineDirective("\\[\\[(?<key>.*?)(?:::(?<defaultTranslation>.*?))?\\]\\]")
 public class InlineTranslationDirective extends AbstractDirective<TranslationScope> {
 	

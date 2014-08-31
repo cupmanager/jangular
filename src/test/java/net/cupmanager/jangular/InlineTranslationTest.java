@@ -41,7 +41,7 @@ public class InlineTranslationTest {
         		.withContextClass(TranslationTestEvalContext.class));
         
     	String html = "<div>"+
-		    "{{1+2}} [['Key.For.Translation']] {{2+2}} yes!"+
+		    "{=1+2} [['Key.For.Translation']] {=2+2} yes!"+
 		"</div>";
 		CompiledTemplate template = compiler.compile(new ByteArrayInputStream(html.getBytes()), TranslationTestScope.class);
 		System.out.println("Compile took " + template.getCompileDuration(TimeUnit.MILLISECONDS) + " ms");

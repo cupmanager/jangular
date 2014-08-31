@@ -55,7 +55,7 @@ public class TranslationTest {
 	}
 	
 	@Directive("test-translate")
-	@TemplateText("{{translated}}")
+	@TemplateText("{=translated}")
 	public static class TestTranslateDirective extends AbstractDirective<TestTranslateDirectiveScope> {
 		public @Context("Language") String lang;
 		private JangularNode node;

@@ -2,15 +2,14 @@ package net.cupmanager.jangular;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import net.cupmanager.jangular.annotations.Directive;
 import net.cupmanager.jangular.annotations.InlineDirective;
+
+import com.google.code.regexp.Matcher;
+import com.google.code.regexp.Pattern;
 
 public class DirectiveRepository {
 	

@@ -1,6 +1,7 @@
 package net.cupmanager.jangular.compiler.templateloader;
 
 import java.io.InputStream;
+import java.util.Collection;
 
 
 public class NullTemplateLoader implements TemplateLoader {
@@ -13,7 +14,7 @@ public class NullTemplateLoader implements TemplateLoader {
 	}
 
 	@Override
-	public long getLastModified(Object template) {
+	public long getLastModified(Collection template) {
 		return 0;
 	}
 	

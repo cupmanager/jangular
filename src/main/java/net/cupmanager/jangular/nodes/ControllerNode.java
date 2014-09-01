@@ -44,6 +44,21 @@ public class ControllerNode extends JangularNode {
 	private Class<? extends Scope> dynamicControllerScopeClass;
 	private Injector injector;
 	
+	@Override
+	public JangularNode clone() {
+		ControllerNode cn = new ControllerNode();
+		
+		cn.node = node.clone();
+		cn.valueCopier = valueCopier;
+		cn.controllerScopeClass = controllerScopeClass;
+		cn.controllerClass = controllerClass;
+		cn.dynamicControllerScopeClass = dynamicControllerScopeClass;
+		cn.injector = injector;
+		
+		return cn;
+	}
+	
+	private ControllerNode() {}
 	
 	@SuppressWarnings("unchecked") 
 	public ControllerNode(String controllerClassName, JangularNode node) throws ControllerNotFoundException {

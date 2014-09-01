@@ -26,6 +26,23 @@ public class ConditionalNode extends JangularNode {
 	private CompiledExpression[] elseIfCompiledConditions;
 	
 	
+	@Override
+	public JangularNode clone() {
+		ConditionalNode cn = new ConditionalNode();
+		cn.condition = condition;
+		cn.compiledCondition = compiledCondition;
+		cn.node = node.clone();
+		cn.elseNode = elseNode == null ? null : elseNode.clone();
+		cn.elseIfNodes = new ArrayList<JangularNode>();
+		for (JangularNode n : elseIfNodes) {
+			cn.elseIfNodes.add(n.clone());
+		}
+		cn.elseIfConditions = new ArrayList<String>(elseIfConditions);
+		cn.elseIfCompiledConditions = elseIfCompiledConditions;
+		return cn;
+	}
+	private ConditionalNode() {}
+	
 	public ConditionalNode(String condition, JangularNode node) {
 		this.condition = condition;
 		this.node = node;

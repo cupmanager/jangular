@@ -22,6 +22,10 @@ public class JClassNode extends JangularNode {
 	}
 	
 	
+	private JClassNode() {
+	}
+
+
 	@Override
 	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
 		Map<String, Boolean> result = (Map<String, Boolean>) MVEL.executeExpression(expression, scope);
@@ -46,5 +50,13 @@ public class JClassNode extends JangularNode {
 			CompilerSession session) {
 		
 	}
+	
 
+	@Override
+	public JangularNode clone() {
+		JClassNode jc = new JClassNode();
+		jc.expression = expression;
+		jc.pc = pc;
+		return jc;
+	}
 }

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Collection;
 
 
 public class FileTemplateLoader implements TemplateLoader<String> {
@@ -24,8 +25,12 @@ public class FileTemplateLoader implements TemplateLoader<String> {
 	}
 	
 	@Override
-	public long getLastModified(String template) {
-		return new File(base, template).lastModified();
+	public long getLastModified(Collection<? extends String> templates) {
+		long lastModified = 0;
+		for(String template : templates){
+			lastModified = Math.max(lastModified, new File(base, template).lastModified());
+		}
+		return lastModified;
 	}
 	
 }

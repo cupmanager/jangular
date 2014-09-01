@@ -3,6 +3,7 @@ package net.cupmanager.jangular.compiler;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -61,6 +62,8 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 //		return new CachingTemplateCompiler(this, cachingStrategy);
 //	}
 	
+	
+	
 	@Override
 	public CompiledTemplate compile(String templatePath) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
 		return compile(templatePath, Scope.class);
@@ -68,37 +71,71 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 	
 	
 	@Override
-	public CompiledTemplate compile(final String templatePath, final Class<? extends Scope> scopeClass) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
-		final TemplateLoader<String> templateLoader = conf.getTemplateLoader();
-		long lm = templateLoader.getLastModified(templatePath);
+	public CompiledTemplate compile(ResourceSpecification spec) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
+		return compile(spec,Scope.class);
+	}
+
+
+
+	@Override
+	public CompiledTemplate compile(final ResourceSpecification spec,final Class<? extends Scope> scopeClass) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException,
+			CompileExpressionException {
 		
-		return conf.getCachingStrategy().get(templatePath, lm, new Callable<CompiledTemplate>() {
+		final String templatePath = spec.getRootResource();
+		
+		final TemplateLoader<String> templateLoader = conf.getTemplateLoader();
+		long lm = templateLoader.getLastModified(spec.getResources());
+		
+		return conf.getCachingStrategy().get(spec, lm, new Callable<CompiledTemplate>() {
 			@Override
 			public CompiledTemplate call() throws Exception {
 				InputStream is = templateLoader.loadTemplate(templatePath);
-				CompiledTemplate compiled = compile(is, scopeClass);
+				
+				CompilerContext context = new CompilerContext(spec);
+				
+				CompiledTemplate compiled = compile(is, scopeClass, context);
 				return compiled;
 			}
 			
 		});
 	}
-	
 
+
+
+	@Override
+	public CompiledTemplate compile(String templatePath, final Class<? extends Scope> scopeClass) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
+		return compile(new StringResourceSpecification(templatePath), scopeClass);
+	}
+	
 	/**
 	 * Won't get cached!
 	 */
 	public CompiledTemplate compile(InputStream is) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException{
-		return compile(is, Scope.class);
+		return compile(is, Scope.class, new CompilerContext(null));
 	}
 	
 	/**
 	 * Won't get cached!
 	 */
 	public CompiledTemplate compile(InputStream is, Class<? extends Scope> scopeClass) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
+			return compile(is, Scope.class, new CompilerContext(null));
+	}
+
+	/**
+	 * Won't get cached!
+	 */
+	public CompiledTemplate compile(InputStream is, CompilerContext context) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException{
+		return compile(is, Scope.class, context);
+	}
+	
+	/**
+	 * Won't get cached!
+	 */
+	public CompiledTemplate compile(InputStream is, Class<? extends Scope> scopeClass, CompilerContext context) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
 		CompilerSession session = new CompilerSession(conf.getClassLoader());
 		
 		long start = System.currentTimeMillis();
-		CompositeNode n = internalCompile(is);
+		CompositeNode n = internalCompile(is, context);
 		
 		n.compileScope(scopeClass, conf.getContextClass(), session);
 		
@@ -111,55 +148,42 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 	}
 	
 	
-	CompositeNode internalCompile(InputStream is) throws ControllerNotFoundException, ParseException {
+	CompositeNode internalCompile(InputStream is, CompilerContext context) throws ControllerNotFoundException, ParseException {
 		IAttoParser parser = new MarkupAttoParser();
 		
 		MarkupParsingConfiguration parserConf = new MarkupParsingConfiguration();
-		parserConf.setElementBalancing(ElementBalancing.REQUIRE_BALANCED);
-
-		CompilerMarkupHandler handler = new CompilerMarkupHandler(this, parserConf, conf.getRepo());
+		parserConf.setElementBalancing(ElementBalancing.AUTO_CLOSE);
+		CompilerMarkupHandler handler = new CompilerMarkupHandler(this, context, parserConf, conf.getRepo());
 		try {
-			parser.parse(new InputStreamReader(is), handler);
+			parser.parse(new InputStreamReader(is, "UTF-8"), handler);
 		} catch (AttoParseException e) {
 			if( e instanceof AttoParseExceptionWrapper ){
 				((AttoParseExceptionWrapper)e).rethrowException();
 			} else {
 				throw new ParseException(e);
 			}
+		} catch (UnsupportedEncodingException e) {
+			throw new ParseException(e);
 		}
 		CompositeNode n = handler.getNode();
 		n.optimize();
 		return n;
 	}
 	
-	public DirectiveNode getDirectiveNode(String name, Map<String, String> attributes, JangularNode content) {
+	public DirectiveNode getDirectiveNode(String name, Map<String, String> attributes, JangularNode content, CompilerContext context) {
 		Class<? extends AbstractDirective<?>> c = conf.getRepo().get(name);
-		return getDirectiveNode(c, attributes, content);
+		return getDirectiveNode(c, attributes, content, context);
 	}
 	
-	private InputStream getDirectiveTemplateInputStream(Class<? extends AbstractDirective<?>> c) throws TemplateLoaderException {
-		Template templateAnnotation = c.getAnnotation(Template.class);
-		TemplateText templateTextAnnotation = c.getAnnotation(TemplateText.class);
-		
-		if (templateAnnotation != null) {
-			String template = templateAnnotation.value();
-			return conf.getDirectiveTemplateLoader().loadTemplate(template);
-			
-		} else if (templateTextAnnotation != null) {
-			String templateText = templateTextAnnotation.value();
-			return new ByteArrayInputStream(templateText.getBytes());
-			
-		} else {
-			throw new TemplateLoaderException("Directive " + c.getName() + " doesn't have @Template or @TemplateText");
-		}
-	}
 	
-	public DirectiveNode getDirectiveNode(Class<? extends AbstractDirective<?>> c, Map<String, String> attributes, JangularNode content) {
+	
+	public DirectiveNode getDirectiveNode(Class<? extends AbstractDirective<?>> c, Map<String, String> attributes, JangularNode content, CompilerContext context) {
 		try {
-			InputStream is = getDirectiveTemplateInputStream(c);
-			JangularNode templateNode =	internalCompile(is);
-			
 			AbstractDirective<?> directiveInstance = c.newInstance();
+			
+			CompilerContext newContext = directiveInstance.preCompile(context,content);
+			InputStream is = directiveInstance.getDirectiveTemplateInputStream(conf.getDirectiveTemplateLoader());
+			JangularNode templateNode =	internalCompile(is, newContext);
 			
 			directiveInstance.compile(attributes, templateNode, content);
 			

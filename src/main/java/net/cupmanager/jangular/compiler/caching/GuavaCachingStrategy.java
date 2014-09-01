@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import net.cupmanager.jangular.compiler.CompiledTemplate;
+import net.cupmanager.jangular.compiler.ResourceSpecification;
 import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.exceptions.CompileExpressionException;
@@ -17,8 +18,8 @@ import com.google.common.cache.CacheBuilder;
 
 public class GuavaCachingStrategy implements CachingStrategy {
 
-	private Cache<String, CompiledTemplate> cache;
-	private Map<String, Long> lastModifieds = new HashMap<String, Long>();
+	private Cache<ResourceSpecification, CompiledTemplate> cache;
+	private Map<ResourceSpecification, Long> lastModifieds = new HashMap<ResourceSpecification, Long>();
 
 //	public GuavaCachingStrategy(Cache<String, CompiledTemplate> cache) {
 //		this.cache = cache;
@@ -29,17 +30,17 @@ public class GuavaCachingStrategy implements CachingStrategy {
 	}
 
 	@Override
-	public CompiledTemplate get(String templatePath, long lm, Callable<CompiledTemplate> compileFunctor) 
+	public CompiledTemplate get(ResourceSpecification spec, long lm, Callable<CompiledTemplate> compileFunctor) 
 			throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException, TemplateLoaderException {
 		try {
-			Long lastLM = lastModifieds.get(templatePath);
+			Long lastLM = lastModifieds.get(spec);
 			if (lastLM != null) {
 				if (lm > lastLM) {
-					cache.invalidate(templatePath);
+					cache.invalidate(spec);
 				}
 			}
-			lastModifieds.put(templatePath, lm); // Not done atomically but at least read before fetching the template, so worst case is still that it will be refreshed next time we load
-			return cache.get(templatePath, compileFunctor);
+			lastModifieds.put(spec, lm); // Not done atomically but at least read before fetching the template, so worst case is still that it will be refreshed next time we load
+			return cache.get(spec, compileFunctor);
 		} catch (ExecutionException e) {
 			Throwable cause = e.getCause();
 			

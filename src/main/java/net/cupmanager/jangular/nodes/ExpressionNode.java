@@ -17,6 +17,9 @@ public class ExpressionNode extends JangularNode {
 		this.expression = expression;;
 	}
 	
+	private ExpressionNode() {
+	}
+
 	@Override
 	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
 		sb.append(compiledExpression.evalToString(scope));
@@ -33,5 +36,13 @@ public class ExpressionNode extends JangularNode {
 			CompilerSession session) throws CompileExpressionException {
 		compiledExpression = CompiledExpression.compile(expression, parentScopeClass, session);
 	}
+	
 
+	@Override
+	public JangularNode clone() {
+		ExpressionNode en = new ExpressionNode();
+		en.expression = expression;
+		en.compiledExpression = compiledExpression;
+		return en;
+	}
 }

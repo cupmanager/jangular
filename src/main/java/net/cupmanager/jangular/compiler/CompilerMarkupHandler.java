@@ -63,10 +63,12 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 	private Stack<ElementMemory> attrStack = new Stack<ElementMemory>();
 	private DirectiveRepository directiveRepository;
 	private ConcreteTemplateCompiler compiler;
+	private CompilerContext context;
 	
-	public CompilerMarkupHandler(ConcreteTemplateCompiler compiler, MarkupParsingConfiguration conf, DirectiveRepository directiveRepository) {
+	public CompilerMarkupHandler(ConcreteTemplateCompiler compiler, CompilerContext context, MarkupParsingConfiguration conf, DirectiveRepository directiveRepository) {
 		super(conf);
 		this.compiler = compiler;
+		this.context = context;
 		this.directiveRepository = directiveRepository;
 		stack.push(new CompositeNode());
 	}
@@ -182,11 +184,13 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 		} else if ("j-repeat".equals(elementName)) {
 			String repeatExpr = elementMemory.attrs.get("for");
 			node = new RepeatNode(repeatExpr, node);
+		} else if("j-transclude".equals(elementName)) {
+			node = context.transcludeContent.clone();
 		} else {
 			
 			if (directiveRepository.hasDirective(elementName)) {
 				Map<String,String> attributesObject = elementMemory.attrs;
-				node = compiler.getDirectiveNode(elementName, attributesObject, node);
+				node = compiler.getDirectiveNode(elementName, attributesObject, node, context);
 			}
 			
 			if (elementMemory.isController()) {
@@ -261,7 +265,7 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 			int start = 0;
 			while(matcher.matcher.find(start)) {
 				Range range = new Range(matcher.matcher.start(), matcher.matcher.end());
-				range.nodes.add(compiler.getDirectiveNode(matcher.directiveClass, matcher.getAttributes(), null));
+				range.nodes.add(compiler.getDirectiveNode(matcher.directiveClass, matcher.getAttributes(), null, context));
 				ranges.add(range);
 				
 				start = matcher.matcher.end();

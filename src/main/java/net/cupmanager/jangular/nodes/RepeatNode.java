@@ -65,6 +65,8 @@ public class RepeatNode extends JangularNode {
 		this.node = node;
 	}
 	
+	private RepeatNode() {
+	}
 	@Override
 	public void eval(Scope scope, StringBuilder sb, EvaluationContext context)
 			throws EvaluationException {
@@ -234,4 +236,17 @@ public class RepeatNode extends JangularNode {
 		return cl;
 	}
 
+
+	@Override
+	public JangularNode clone() {
+		RepeatNode rn = new RepeatNode();
+		rn.varName = varName;
+		rn.listExpression = listExpression;
+		rn.node = node.clone();
+		rn.pc = pc;
+		rn.nodeScopeClass = nodeScopeClass;
+		rn.listExpressionString = listExpressionString;
+		rn.listVarName = listVarName;
+		return rn;
+	}
 }

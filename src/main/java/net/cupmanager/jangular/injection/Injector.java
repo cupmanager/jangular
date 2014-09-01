@@ -1,6 +1,7 @@
 package net.cupmanager.jangular.injection;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +65,7 @@ public abstract class Injector {
 		mv.visitTypeInsn(Opcodes.CHECKCAST, Type.getInternalName(evaluationContextClass));
 		mv.visitVarInsn(Opcodes.ASTORE, 4);
 		
-		List<InjectableField> fields = Injector.getInjectableFields(targetClass);
+		List<InjectableField> fields = Injector.getInjectableFields(targetClass, session);
 		
 		for (InjectableField field : fields) {
 			// What's the field name in the evaluation context?
@@ -98,14 +99,18 @@ public abstract class Injector {
 	
 	
 
-	private static List<InjectableField> getInjectableFields(Class<?> c) {
+	private static List<InjectableField> getInjectableFields(Class<?> c, CompilerSession session) {
 		List<InjectableField> fields = new ArrayList<InjectableField>();
-		for (Field field : c.getFields()) {
+		for (Field field : c.getDeclaredFields()) {
 			Context injectAnnotation = field.getAnnotation(Context.class);
 			if (injectAnnotation != null) {
-				InjectableField injectableField = new InjectableField(field.getName(), injectAnnotation.value(), field.getType());
-				fields.add(injectableField);
-			}
+				if (Modifier.isPublic(field.getModifiers())) {
+					InjectableField injectableField = new InjectableField(field.getName(), injectAnnotation.value(), field.getType());
+					fields.add(injectableField);
+				} else {
+					session.warn("The field '"+field.getName()+"' in "+c.getCanonicalName()+" has @Context but is not public!");
+				}
+			} 
 		}
 		return fields;
 	}

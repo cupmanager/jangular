@@ -40,4 +40,9 @@ public class TextNode extends JangularNode {
 		return text.trim().isEmpty();
 	}
 
+	@Override
+	public JangularNode clone() {
+		return new TextNode(text);
+	}
+
 }

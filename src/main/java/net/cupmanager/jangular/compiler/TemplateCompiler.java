@@ -23,6 +23,12 @@ public interface TemplateCompiler {
 	public CompiledTemplate compile(String templatePath) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException;
 	public CompiledTemplate compile(String templatePath, Class<? extends Scope> scopeClass) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException;
 	
+	public CompiledTemplate compile(InputStream is, CompilerContext context) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException;
+	public CompiledTemplate compile(InputStream is, Class<? extends Scope> scopeClass, CompilerContext context) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException;
 	public CompiledTemplate compile(InputStream is) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException;
 	public CompiledTemplate compile(InputStream is, Class<? extends Scope> scopeClass) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException;
+	
+	public CompiledTemplate compile(ResourceSpecification resource) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException;
+	public CompiledTemplate compile(ResourceSpecification resource, Class<? extends Scope> scopeClass) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException;
+	
 }

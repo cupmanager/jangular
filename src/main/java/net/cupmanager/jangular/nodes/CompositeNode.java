@@ -19,6 +19,32 @@ public class CompositeNode extends JangularNode {
 	private List<JangularNode> nodes;
 	private JangularNode[] fastnodes;
 	
+	@Override
+	public JangularNode clone() {
+		CompositeNode cn = new CompositeNode();
+		
+		if (nodes == null) {
+			cn.nodes = null; 
+		} else {
+			cn.nodes = new ArrayList<JangularNode>();
+			for (JangularNode n : nodes) {
+				cn.nodes.add(n.clone());
+			}
+		}
+		
+		if (fastnodes == null) {
+			cn.fastnodes = null;
+		} else {
+			cn.fastnodes = new JangularNode[fastnodes.length];
+			for (int i=0; i<fastnodes.length; i++) {
+				cn.fastnodes[i] = fastnodes[i].clone();
+			}
+			
+		}
+		
+		return cn;
+	}
+	
 	public CompositeNode(List<JangularNode> nodes) {
 		this.nodes = nodes;
 	}

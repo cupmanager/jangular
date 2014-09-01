@@ -21,4 +21,6 @@ public abstract class JangularNode extends Evaluatable {
 
 	public abstract void eval(Scope scope, StringBuilder sb, EvaluationContext context)
 			throws EvaluationException;
+	
+	public abstract JangularNode clone();
 }

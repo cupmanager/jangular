@@ -10,5 +10,6 @@ import net.cupmanager.jangular.exceptions.ControllerNotFoundException;
 import net.cupmanager.jangular.exceptions.ParseException;
 
 public interface CachingStrategy {
-	public CompiledTemplate get(String templatePath, Callable<CompiledTemplate> compileFunctor) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException, TemplateLoaderException ;
+	public CompiledTemplate get(String templatePath, long lastModified, Callable<CompiledTemplate> compileFunctor) 
+			throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException, TemplateLoaderException ;
 }

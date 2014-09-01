@@ -1,11 +1,11 @@
 package net.cupmanager.jangular.compiler.caching;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import net.cupmanager.jangular.compiler.CompiledTemplate;
-
-
 import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.exceptions.CompileExpressionException;
@@ -18,6 +18,7 @@ import com.google.common.cache.CacheBuilder;
 public class GuavaCachingStrategy implements CachingStrategy {
 
 	private Cache<String, CompiledTemplate> cache;
+	private Map<String, Long> lastModifieds = new HashMap<String, Long>();
 
 //	public GuavaCachingStrategy(Cache<String, CompiledTemplate> cache) {
 //		this.cache = cache;
@@ -28,8 +29,16 @@ public class GuavaCachingStrategy implements CachingStrategy {
 	}
 
 	@Override
-	public CompiledTemplate get(String templatePath, Callable<CompiledTemplate> compileFunctor) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException, TemplateLoaderException {
+	public CompiledTemplate get(String templatePath, long lm, Callable<CompiledTemplate> compileFunctor) 
+			throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException, TemplateLoaderException {
 		try {
+			Long lastLM = lastModifieds.get(templatePath);
+			if (lastLM != null) {
+				if (lm > lastLM) {
+					cache.invalidate(templatePath);
+				}
+			}
+			lastModifieds.put(templatePath, lm); // Not done atomically but at least read before fetching the template, so worst case is still that it will be refreshed next time we load
 			return cache.get(templatePath, compileFunctor);
 		} catch (ExecutionException e) {
 			Throwable cause = e.getCause();

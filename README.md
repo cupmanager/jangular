@@ -21,7 +21,7 @@ Informal todo
 -------------
 * Repository for controllers? Or at least specify package names to look in.
 * Directives as attributes and some transclude functionality?
-* How to handle that template files change on disk?
+* [FIXED] How to handle that template files change on disk? Reading lastmodified each time (!)
 * Directives/controllers should be able to only generate data for the fields that will actually be used in the template
 * [FIXED] Caching system. Also including a GuavaCachingStrategy
 * [FIXED] Specify where Jangular should look for template files
@@ -365,13 +365,14 @@ See the InlineTranslationTest class for an example of this (in src/test/java/net
 You can tell Jangular to cache the compilations of templates. We provide you with an implementation that uses Guava's Cache, but you can easily write your own adapter for another caching system.
 
 Code example:
-```java
+```java 
 	CompilerConfiguration conf = CompilerConfiguration.create()
 		.withDirectives(repo)
-		.withTemplateLoader(new FileTemplateLoader("templates/test", "templates/test/directives"));
+		.withTemplateLoader(new FileTemplateLoader("templates/test"))
+		.withDirectiveTemplateLoader(new FileTemplateLoader("templates/test/directives"))
+		.withCaching(new GuavaCachingStrategy(CacheBuilder.newBuilder().maximumSize(1000)));
 
-	TemplateCompiler compiler = ConcreteTemplateCompiler.create(conf)
-		.cached(new GuavaCachingStrategy(CacheBuilder.newBuilder().maximumSize(1000)));
+	TemplateCompiler compiler = ConcreteTemplateCompiler.create(conf);
   
 	CompiledTemplate template = compiler.compile("test.html", AppScope.class);
 	

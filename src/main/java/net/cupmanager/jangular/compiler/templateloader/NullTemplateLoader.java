@@ -3,20 +3,18 @@ package net.cupmanager.jangular.compiler.templateloader;
 import java.io.InputStream;
 
 
-public class NullTemplateLoader extends AbstractTemplateLoader {
+public class NullTemplateLoader implements TemplateLoader {
 	
 	public NullTemplateLoader() {}
 	
 	@Override
-	public InputStream loadTemplate(String template) throws TemplateLoaderException {
+	public InputStream loadTemplate(Object template) throws TemplateLoaderException {
 		throw new TemplateLoaderException("No availiable template loader");
 	}
-	
+
 	@Override
-	public InputStream loadDirectiveTemplate(String template) throws TemplateLoaderException {
-		throw new TemplateLoaderException("No availiable template loader.");
+	public long getLastModified(Object template) {
+		return 0;
 	}
-	
-	
 	
 }

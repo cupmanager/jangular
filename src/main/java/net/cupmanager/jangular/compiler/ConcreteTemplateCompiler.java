@@ -4,18 +4,15 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.AbstractDirective;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.Template;
 import net.cupmanager.jangular.annotations.TemplateText;
-import net.cupmanager.jangular.compiler.caching.CachingStrategy;
-import net.cupmanager.jangular.compiler.caching.CachingTemplateCompiler;
-import net.cupmanager.jangular.compiler.templateloader.AbstractTemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException;
+import net.cupmanager.jangular.compiler.templateloader.TemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.exceptions.AttoParseExceptionWrapper;
 import net.cupmanager.jangular.exceptions.CompileExpressionException;
@@ -30,7 +27,6 @@ import org.attoparser.IAttoParser;
 import org.attoparser.markup.MarkupAttoParser;
 import org.attoparser.markup.MarkupParsingConfiguration;
 import org.attoparser.markup.MarkupParsingConfiguration.ElementBalancing;
-import org.xml.sax.SAXException;
 
 public class ConcreteTemplateCompiler implements TemplateCompiler {
 	
@@ -63,9 +59,9 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 		return cc;
 	}
 	
-	public TemplateCompiler cached(CachingStrategy cachingStrategy) {
-		return new CachingTemplateCompiler(this, cachingStrategy);
-	}
+//	public TemplateCompiler cached(CachingStrategy cachingStrategy) {
+//		return new CachingTemplateCompiler(this, cachingStrategy);
+//	}
 	
 	@Override
 	public CompiledTemplate compile(String templatePath) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
@@ -74,17 +70,32 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 	
 	
 	@Override
-	public CompiledTemplate compile(String templatePath, Class<? extends Scope> scopeClass) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
-		AbstractTemplateLoader templateLoader = conf.getTemplateLoader();
-		InputStream is = templateLoader.loadTemplate(templatePath);
-		CompiledTemplate compiled = compile(is, scopeClass);
-		return compiled;
+	public CompiledTemplate compile(final String templatePath, final Class<? extends Scope> scopeClass) throws TemplateLoaderException, ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
+		final TemplateLoader<String> templateLoader = conf.getTemplateLoader();
+		long lm = templateLoader.getLastModified(templatePath);
+		
+		return conf.getCachingStrategy().get(templatePath, lm, new Callable<CompiledTemplate>() {
+			@Override
+			public CompiledTemplate call() throws Exception {
+				InputStream is = templateLoader.loadTemplate(templatePath);
+				CompiledTemplate compiled = compile(is, scopeClass);
+				return compiled;
+			}
+			
+		});
 	}
 	
+
+	/**
+	 * Won't get cached!
+	 */
 	public CompiledTemplate compile(InputStream is) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException{
 		return compile(is, Scope.class);
 	}
 	
+	/**
+	 * Won't get cached!
+	 */
 	public CompiledTemplate compile(InputStream is, Class<? extends Scope> scopeClass) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
 		CompilerSession session = new CompilerSession(conf.getClassLoader());
 		
@@ -96,7 +107,7 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 		long end = System.currentTimeMillis();
 		
 		CompiledTemplate compiledTemplate = new CompiledTemplate(n);
-		compiledTemplate.setDuration(end-start, TimeUnit.MILLISECONDS);
+		compiledTemplate.setCompileDuration(end-start, TimeUnit.MILLISECONDS);
 		compiledTemplate.setWarnings(session.getWarnings());
 		return compiledTemplate;
 	}
@@ -134,7 +145,7 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 		
 		if (templateAnnotation != null) {
 			String template = templateAnnotation.value();
-			return conf.getTemplateLoader().loadDirectiveTemplate(template);
+			return conf.getDirectiveTemplateLoader().loadTemplate(template);
 			
 		} else if (templateTextAnnotation != null) {
 			String templateText = templateTextAnnotation.value();

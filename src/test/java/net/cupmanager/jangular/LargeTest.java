@@ -1,11 +1,8 @@
 package net.cupmanager.jangular;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.compiler.CompiledTemplate;
@@ -14,16 +11,13 @@ import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
 import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.compiler.caching.GuavaCachingStrategy;
 import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
-import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.exceptions.CompileException;
 import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
 import net.cupmanager.jangular.util.MatchTableDirective;
 
-import org.attoparser.AttoParseException;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 import com.google.common.cache.CacheBuilder;
 
@@ -55,11 +49,12 @@ public class LargeTest {
 		
 		CompilerConfiguration conf = CompilerConfiguration.create()
 				.withDirectives(repo)
-				.withTemplateLoader(new FileTemplateLoader("templates/test", "templates/test/directives"))
-				.withContextClass(AppEvalContext.class);
+				.withTemplateLoader(new FileTemplateLoader("templates/test"))
+				.withDirectiveTemplateLoader(new FileTemplateLoader("templates/test/directives"))
+				.withContextClass(AppEvalContext.class)
+				.withCaching(new GuavaCachingStrategy(CacheBuilder.newBuilder().maximumSize(1000)));
 		
-        TemplateCompiler compiler = ConcreteTemplateCompiler.create(conf)
-            	.cached(new GuavaCachingStrategy(CacheBuilder.newBuilder().maximumSize(1000)));
+        TemplateCompiler compiler = ConcreteTemplateCompiler.create(conf);
         
 		CompiledTemplate template = compiler.compile("largetest.html", AppScope.class);
 		
@@ -121,7 +116,4 @@ public class LargeTest {
 		return scope;
 	}
 	
-	public static void main(String[] args) throws CompileException, EvaluationException {
-		new LargeTest().pleaseDontCrash();
-	}
 }

@@ -29,7 +29,7 @@ public class CompiledTemplate extends Evaluatable {
 		node.eval(scope, sb, context);
 	}
 
-	void setDuration(long time, TimeUnit unit) {
+	void setCompileDuration(long time, TimeUnit unit) {
 		this.durationMs = unit.toMillis(time);
 	}
 	

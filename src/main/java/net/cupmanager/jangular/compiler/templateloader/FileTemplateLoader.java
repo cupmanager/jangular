@@ -6,18 +6,12 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 
-public class FileTemplateLoader extends AbstractTemplateLoader {
+public class FileTemplateLoader implements TemplateLoader<String> {
 	
 	private String base;
-	private String directiveBase;
 
 	public FileTemplateLoader(String base) {
-		this(base, base);
-	}
-	
-	public FileTemplateLoader(String base, String directiveBase) {
 		this.base = base;
-		this.directiveBase = directiveBase;
 	}
 
 	@Override
@@ -30,14 +24,8 @@ public class FileTemplateLoader extends AbstractTemplateLoader {
 	}
 	
 	@Override
-	public InputStream loadDirectiveTemplate(String template) throws TemplateLoaderException {
-		try {
-			return new FileInputStream(new File(directiveBase, template));
-		} catch (FileNotFoundException e) {
-			throw new TemplateLoaderException(e);
-		}
+	public long getLastModified(String template) {
+		return new File(base, template).lastModified();
 	}
-	
-	
 	
 }

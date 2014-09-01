@@ -3,7 +3,7 @@ package net.cupmanager.jangular;
 import java.io.ByteArrayInputStream;
 
 import net.cupmanager.jangular.compiler.CompiledTemplate;
-import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
+import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.exceptions.CompileException;
 import net.cupmanager.jangular.exceptions.EvaluationException;
 
@@ -17,7 +17,7 @@ public class MinimalTest {
 	public void basic() throws CompileException, EvaluationException {
 		String html = "<div>{=1+1} == 2</div>";
 		
-		CompiledTemplate template = ConcreteTemplateCompiler.create()
+		CompiledTemplate template = TemplateCompiler.Builder.create()
 			.compile(new ByteArrayInputStream(html.getBytes()));
 		
 		StringBuilder sb = new StringBuilder();

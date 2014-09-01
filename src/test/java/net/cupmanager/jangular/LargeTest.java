@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
-import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
 import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.compiler.caching.GuavaCachingStrategy;
 import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
@@ -54,7 +53,7 @@ public class LargeTest {
 				.withContextClass(AppEvalContext.class)
 				.withCaching(new GuavaCachingStrategy(CacheBuilder.newBuilder().maximumSize(1000)));
 		
-        TemplateCompiler compiler = ConcreteTemplateCompiler.create(conf);
+        TemplateCompiler compiler = TemplateCompiler.Builder.create(conf);
         
 		CompiledTemplate template = compiler.compile("largetest.html", AppScope.class);
 		

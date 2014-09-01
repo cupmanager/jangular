@@ -30,34 +30,32 @@ import org.attoparser.markup.MarkupParsingConfiguration.ElementBalancing;
 
 public class ConcreteTemplateCompiler implements TemplateCompiler {
 	
-	public static ConcreteTemplateCompiler create() {
-		return new ConcreteTemplateCompiler();
-	}
-	
-	public static ConcreteTemplateCompiler create(CompilerConfiguration conf) {
-		return new ConcreteTemplateCompiler().withConfig(conf);
-	}
-	
 	private CompilerConfiguration conf;
 
-	private ConcreteTemplateCompiler() {
+	ConcreteTemplateCompiler() {
 		this.conf = CompilerConfiguration.create();
 	}
 	
 	
 	
-	private ConcreteTemplateCompiler copy() {
-		ConcreteTemplateCompiler jc = new ConcreteTemplateCompiler();
-		jc.conf = conf;
-		return jc;
+	public ConcreteTemplateCompiler(CompilerConfiguration conf) {
+		this.conf = conf;
 	}
-	
-	
-	public ConcreteTemplateCompiler withConfig(CompilerConfiguration conf) {
-		ConcreteTemplateCompiler cc = copy();
-		cc.conf = conf;
-		return cc;
-	}
+
+
+
+//	private ConcreteTemplateCompiler copy() {
+//		ConcreteTemplateCompiler jc = new ConcreteTemplateCompiler();
+//		jc.conf = conf;
+//		return jc;
+//	}
+//	
+//	
+//	public ConcreteTemplateCompiler withConfig(CompilerConfiguration conf) {
+//		ConcreteTemplateCompiler cc = copy();
+//		cc.conf = conf;
+//		return cc;
+//	}
 	
 //	public TemplateCompiler cached(CachingStrategy cachingStrategy) {
 //		return new CachingTemplateCompiler(this, cachingStrategy);

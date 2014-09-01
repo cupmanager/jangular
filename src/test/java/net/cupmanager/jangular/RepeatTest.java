@@ -4,17 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import net.cupmanager.jangular.compiler.CompiledTemplate;
-import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
+import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.exceptions.CompileException;
 import net.cupmanager.jangular.exceptions.EvaluationException;
 
-import org.attoparser.AttoParseException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 
 public class RepeatTest {
@@ -38,7 +34,7 @@ public class RepeatTest {
 	@Test
 	public void basic() throws CompileException, EvaluationException {
 		String template = "<div j-repeat=\"item in items\">{=$index}: {=item.title}</div>";
-		CompiledTemplate compiled = ConcreteTemplateCompiler.create()
+		CompiledTemplate compiled = TemplateCompiler.Builder.create()
 			.compile(new ByteArrayInputStream(template.getBytes()), RepeatTestScope.class);
 		
 		StringBuilder sb = new StringBuilder();
@@ -51,7 +47,7 @@ public class RepeatTest {
 	@Test
 	public void asTag() throws CompileException, EvaluationException {
 		String template = "<j-repeat for=\"item in items\">{=$index}: {=item.title}</j-repeat>";
-		CompiledTemplate compiled = ConcreteTemplateCompiler.create()
+		CompiledTemplate compiled = TemplateCompiler.Builder.create()
 			.compile(new ByteArrayInputStream(template.getBytes()), RepeatTestScope.class);
 		
 		StringBuilder sb = new StringBuilder();

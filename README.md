@@ -77,7 +77,7 @@ This is a minimal example of how to invoke Jangular:
 String html = "<div>{=1+1} == 2</div>";
 
 StringBuilder sb = new StringBuilder();    
-ConcreteTemplateCompiler.create()
+TemplateCompiler.Builder.create()
     .compile(new ByteArrayInputStream(html.getBytes()))
     .eval(sb);
 
@@ -92,7 +92,7 @@ Compiling turns the template into a series of very efficient steps ready for eva
 
 You probably want to store your templates as files rather than strings in your code. If you move the actual template (```<div>{=1+1} == 2</div>```) to a file called ```templates/template.html```, we can specify a TemplateLoader that tells Jangular how to find the template. The following code will produce output equivalent the to minimal example above:
 ```java
-CompiledTemplate template = ConcreteTemplateCompiler.create(
+CompiledTemplate template = TemplateCompiler.Builder.create(
 	CompilerConfiguration.create()
 		.withTemplateLoader(new FileTemplateLoader("templates")))
 	.compile("template.html");
@@ -105,7 +105,7 @@ Note that we also stored the compiled template to the ```template``` variable so
 
 You can of course also reuse the step just before ```compile()``` which is called a Compiler. Take a look at this code:
 ```java
-TemplateCompiler compiler = ConcreteTemplateCompiler.create(
+TemplateCompiler compiler = TemplateCompiler.Builder.create(
 	CompilerConfiguration.create()
 		.withTemplateLoader(new FileTemplateLoader("templates")));
 
@@ -149,7 +149,7 @@ Info:
 
 Usage:
 ```java
-TemplateCompiler compiler = ConcreteTemplateCompiler.create(
+TemplateCompiler compiler = TemplateCompiler.Builder.create(
 	CompilerConfiguration.create()
 		.withTemplateLoader(new FileTemplateLoader("templates")));
     
@@ -188,7 +188,7 @@ public class ExampleScope extends Scope {
 
 ....
 
-TemplateCompiler compiler = ConcreteTemplateCompiler.create(
+TemplateCompiler compiler = TemplateCompiler.Builder.create(
 	CompilerConfiguration.create()
 		.withTemplateLoader(new FileTemplateLoader("templates")));
     
@@ -249,7 +249,7 @@ public class UserExampleContext extends EvaluationContext {
 
 .....
 
-TemplateCompiler compiler = ConcreteTemplateCompiler.create(
+TemplateCompiler compiler = TemplateCompiler.Builder.create(
 	CompilerConfiguration.create()
 		.withTemplateLoader(new FileTemplateLoader("templates"))
 		.withContextClass(UserExampleContext.class));
@@ -330,7 +330,7 @@ CompilerConfiguration conf = CompilerConfiguration.create()
     .withTemplateLoader(new FileTemplateLoader("templates"))
     .withContextClass(DirectiveExampleContext.class);
 
-TemplateCompiler compiler = ConcreteTemplateCompiler.create(conf);
+TemplateCompiler compiler = TemplateCompiler.Builder.create(conf);
 
 CompiledTemplate template = compiler.compile("controller-example.html");
 
@@ -372,7 +372,7 @@ Code example:
 		.withDirectiveTemplateLoader(new FileTemplateLoader("templates/test/directives"))
 		.withCaching(new GuavaCachingStrategy(CacheBuilder.newBuilder().maximumSize(1000)));
 
-	TemplateCompiler compiler = ConcreteTemplateCompiler.create(conf);
+	TemplateCompiler compiler = TemplateCompiler.Builder.create(conf);
   
 	CompiledTemplate template = compiler.compile("test.html", AppScope.class);
 	
@@ -383,5 +383,5 @@ Code example:
 	template = compiler.compile("test.html", AppScope.class);
 ```
 
-You can write your own caching strategy by extending the CachingStrategy interface, see the GuavaCachingStrategy for an example (it will be called by a CachingTemplateCompiler in Jangular)
+You can write your own caching strategy by extending the CachingStrategy interface, see the GuavaCachingStrategy for an example.
 

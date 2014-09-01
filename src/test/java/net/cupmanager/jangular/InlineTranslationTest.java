@@ -1,25 +1,19 @@
 package net.cupmanager.jangular;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.util.concurrent.TimeUnit;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 import net.cupmanager.jangular.annotations.Provides;
 import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
-import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
 import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.exceptions.CompileException;
 import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.util.InlineTranslationDirective;
 
-import org.attoparser.AttoParseException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 public class InlineTranslationTest {
 	
@@ -35,8 +29,8 @@ public class InlineTranslationTest {
     	DirectiveRepository repo = new DirectiveRepository();
     	repo.register(InlineTranslationDirective.class);
     	
-        TemplateCompiler compiler = ConcreteTemplateCompiler.create()
-    		.withConfig(CompilerConfiguration.create()
+        TemplateCompiler compiler = TemplateCompiler.Builder.create(
+    		CompilerConfiguration.create()
         		.withDirectives(repo)
         		.withContextClass(TranslationTestEvalContext.class));
         

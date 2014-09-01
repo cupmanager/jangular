@@ -1,7 +1,7 @@
 package net.cupmanager.jangular;
 
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
-import net.cupmanager.jangular.compiler.ConcreteTemplateCompiler;
+import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
 import net.cupmanager.jangular.exceptions.CompileException;
@@ -21,14 +21,14 @@ public class ExceptionTests {
 		public Item item;
 	}
 
-	private ConcreteTemplateCompiler compiler;
+	private TemplateCompiler compiler;
 	
 	@Before
 	public void createCompiler() {
 		CompilerConfiguration conf = CompilerConfiguration.create()
 				.withTemplateLoader(new FileTemplateLoader("templates/test/crash"));
 		
-		this.compiler = ConcreteTemplateCompiler.create(conf);
+		this.compiler = TemplateCompiler.Builder.create(conf);
 	}
 	
 	@Test(expected=CompileExpressionException.class)

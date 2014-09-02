@@ -37,6 +37,10 @@ public abstract class CompiledExpression {
 	
 	public static CompiledExpression compile(String expression, Class<? extends Scope> scopeClass, CompilerSession session) throws CompileExpressionException{
 		
+		if( expression == null ){
+			expression = "null";
+		}
+		
 		ParserConfiguration conf = new ParserConfiguration();
 		conf.setClassLoader(session.getClassLoader());
 		ParserContext pc = new ParserContext(conf);

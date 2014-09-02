@@ -191,7 +191,7 @@ public class DirectiveNode extends JangularNode {
 							 
 							list.add(f);
 						} else {
-							session.warn("The field '"+field.getName()+"' in "+superScopeClass.getCanonicalName()+" has @In but is not public!" +
+							session.warn("The field '"+field.getName()+"' in "+superScopeClass.getCanonicalName()+" has @In but is not public! " +
 									"It will not recieve its value from the " + 
 									(attrs.containsKey(field.getName())?"Node attributes.":"parent Scope."));
 						}
@@ -227,6 +227,10 @@ public class DirectiveNode extends JangularNode {
 				for (Field field : fields) {
 					if (field.getAnnotation(In.class) != null) {
 						if( Modifier.isPublic(field.getModifiers()) ){
+							if(!attrs.containsKey(field.getName())){
+								session.warn("The field ['"+field.getName()+"', "+field.getType().getCanonicalName()+"] in "+superScopeClass.getCanonicalName()+" has no matching attribute. It will be set to null!");
+							}
+							
 							ScopeField f = new ScopeField();
 							f.index = attrIndex++;
 							f.inScopeClass = true;
@@ -235,14 +239,18 @@ public class DirectiveNode extends JangularNode {
 							f.type = field.getType();
 							list.add(f);
 						} else {
-							session.warn("The field '"+field.getName()+"' in "+superScopeClass.getCanonicalName()+" has @In but is not public!\n" +
-									"It will not recieve its value from the Node attributes");
+							session.warn("The field '"+field.getName()+"' in "+superScopeClass.getCanonicalName()+" has @In but is not public! " +
+										"It will not recieve its value from the Node attributes");
 						}
 					}
 				}
 			} else {
 //				nodevariables  (värden från attribut)
 				for (String s : nodeVariables) {
+					if(!attrs.containsKey(s)){
+						session.warn("The field '"+s+"' that is used within the directive "+directiveInstance.getClass().getCanonicalName()+" has no matching attribute. It will be set to null!");
+					}
+					
 					ScopeField f = new ScopeField();
 					f.index = attrIndex++;
 					f.inScopeClass = false;

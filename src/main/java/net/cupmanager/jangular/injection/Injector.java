@@ -80,8 +80,8 @@ public abstract class Injector {
 			} else {
 				session.warn(String.format("The context class %s has no @Provides for [%s with context '%s']. "+
 							"Will not inject '%s' in %s",
-							evaluationContextClass, field.type, field.context,
-							field.name, targetClass));
+							evaluationContextClass.getCanonicalName(), field.type.getCanonicalName(), field.context,
+							field.name, targetClass.getCanonicalName()));
 			}
 		}
 		

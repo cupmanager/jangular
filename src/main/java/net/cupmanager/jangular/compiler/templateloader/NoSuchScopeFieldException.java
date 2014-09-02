@@ -11,7 +11,7 @@ public class NoSuchScopeFieldException extends CompileException {
 			Class<? extends Scope> parentScopeClass,
 			Class<? extends Scope> scopeClass,
 			String fieldName){
-		super(String.format("The scope %s does not have the field [%s, unknown type] that is required by %s",
+		super(String.format("The scope %s does not have the field ['%s', unknown type] that is required by %s",
 				parentScopeClass.getCanonicalName(),
 				fieldName,
 				scopeClass.getCanonicalName()));
@@ -21,7 +21,7 @@ public class NoSuchScopeFieldException extends CompileException {
 			Class<? extends Scope> parentScopeClass,
 			Class<? extends Scope> scopeClass,
 			Field field){
-		super(String.format("The scope %s does not have the field [%s of type %d] that is required by %s",
+		super(String.format("The scope %s does not have the field ['%s' of type %d] that is required by %s",
 				parentScopeClass.getCanonicalName(),
 				field.getName(),
 				field.getType().getCanonicalName(),

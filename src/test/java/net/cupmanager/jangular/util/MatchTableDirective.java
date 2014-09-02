@@ -20,6 +20,7 @@ public class MatchTableDirective extends AbstractDirective<MatchTableScope> {
 	
 	public static class MatchTableScope extends Scope {
 		@In public Item item;
+		@In public Object no;
 		public boolean includeheaders;
 		public String hej;
 	}

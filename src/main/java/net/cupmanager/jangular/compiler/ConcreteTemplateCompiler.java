@@ -1,6 +1,5 @@
 package net.cupmanager.jangular.compiler;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -10,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 import net.cupmanager.jangular.AbstractDirective;
 import net.cupmanager.jangular.Scope;
-import net.cupmanager.jangular.annotations.Template;
-import net.cupmanager.jangular.annotations.TemplateText;
 import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoader;
 import net.cupmanager.jangular.compiler.templateloader.TemplateLoaderException;
@@ -22,6 +19,7 @@ import net.cupmanager.jangular.exceptions.ParseException;
 import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.DirectiveNode;
 import net.cupmanager.jangular.nodes.JangularNode;
+import net.cupmanager.jangular.nodes.TextNode;
 
 import org.attoparser.AttoParseException;
 import org.attoparser.IAttoParser;
@@ -118,7 +116,7 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 	 * Won't get cached!
 	 */
 	public CompiledTemplate compile(InputStream is, Class<? extends Scope> scopeClass) throws ControllerNotFoundException, ParseException, NoSuchScopeFieldException, CompileExpressionException {
-			return compile(is, Scope.class, new CompilerContext(null));
+			return compile(is, scopeClass, new CompilerContext(null));
 	}
 
 	/**
@@ -182,11 +180,12 @@ public class ConcreteTemplateCompiler implements TemplateCompiler {
 			AbstractDirective<?> directiveInstance = c.newInstance();
 			
 			CompilerContext newContext = directiveInstance.preCompile(context,content);
+			JangularNode templateNode =	new TextNode("");
 			InputStream is = directiveInstance.getDirectiveTemplateInputStream(conf.getDirectiveTemplateLoader());
-			JangularNode templateNode =	internalCompile(is, newContext);
-			
+			if (is != null) {
+				templateNode = internalCompile(is, newContext);
+			}
 			directiveInstance.compile(attributes, templateNode, content);
-			
 			return new DirectiveNode(directiveInstance, templateNode, attributes);
 			
 		} catch (Exception e) {

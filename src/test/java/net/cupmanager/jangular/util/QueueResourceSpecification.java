@@ -20,11 +20,12 @@ public class QueueResourceSpecification implements ResourceSpecification {
 	}
 	
 	public String head() {
-		return paths.get(0);
+		return paths.isEmpty() ? null : paths.get(0);
 	}
 
 	public QueueResourceSpecification tail() {
-		return new QueueResourceSpecification(paths.subList(1, paths.size()));
+		return new QueueResourceSpecification(
+				paths.isEmpty() ? paths : paths.subList(1, paths.size()) );
 	}
 
 	@Override

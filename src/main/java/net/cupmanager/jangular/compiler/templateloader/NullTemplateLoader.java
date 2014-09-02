@@ -17,5 +17,10 @@ public class NullTemplateLoader implements TemplateLoader {
 	public long getLastModified(Collection template) {
 		return 0;
 	}
+
+	@Override
+	public boolean exists(Object template) {
+		return false;
+	}
 	
 }

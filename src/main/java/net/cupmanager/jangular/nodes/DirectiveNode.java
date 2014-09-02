@@ -12,6 +12,7 @@ import java.util.Set;
 import net.cupmanager.jangular.AbstractDirective;
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.annotations.In;
+import net.cupmanager.jangular.annotations.Transparent;
 import net.cupmanager.jangular.compiler.CompilerSession;
 import net.cupmanager.jangular.compiler.JangularCompilerUtils;
 import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException;
@@ -84,7 +85,7 @@ public class DirectiveNode extends JangularNode {
 		this.variables = new HashSet<String>();
 		this.attrs = attrs;
 		
-		this.transparent = attrs.containsKey("transparent");
+		this.transparent = attrs.containsKey("transparent") || directiveInstance.getClass().getAnnotation(Transparent.class) != null;
 		
 		this.hasDirectiveScope = directiveInstance.getScopeClass() != null;
 		

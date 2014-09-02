@@ -14,7 +14,7 @@ public class FileTemplateLoader implements TemplateLoader<String> {
 	public FileTemplateLoader(String base) {
 		this.base = base;
 	}
-
+	
 	@Override
 	public InputStream loadTemplate(String template) throws TemplateLoaderException {
 		try {
@@ -31,6 +31,11 @@ public class FileTemplateLoader implements TemplateLoader<String> {
 			lastModified = Math.max(lastModified, new File(base, template).lastModified());
 		}
 		return lastModified;
+	}
+
+	@Override
+	public boolean exists(String template) {
+		return new File(base, template).exists();
 	}
 	
 }

@@ -55,6 +55,8 @@ public abstract class AbstractDirective<T extends Scope> {
 	}
 
 	public CompilerContext preCompile(CompilerContext context, JangularNode content) {
-		return context;
+		CompilerContext newContext = context.clone();
+		newContext.transcludeContent = content;
+		return newContext;
 	}
 }

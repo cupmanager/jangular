@@ -24,9 +24,8 @@ public class IncludeDirective extends AbstractDirective<IncludeDirectiveScope> {
 		@In public int i;
 		public int a=1;
 		public List<Integer> list = Arrays.asList(new Integer[]{1,2,3,4,5});
+	
 	}
-	
-	
 
 	@Override
 	public void eval(IncludeDirectiveScope scope) throws EvaluationException {

@@ -204,15 +204,16 @@ public class ControllerNode extends JangularNode {
 				
 				if( controllerField.getAnnotation(In.class) != null ){
 					if( parentField == null ) {
-						throw new RuntimeException(String.format(
-							"The @In-field %s in %s is not availiable in the parent scope (%s)!",
-							fieldName, controllerScopeClass.getName(), parentScopeClass.getName()));
+					//	throw new RuntimeException(String.format(
+					//		"The @In-field %s in %s is not availiable in the parent scope (%s)!",
+					//		fieldName, controllerScopeClass.getName(), parentScopeClass.getName()));
+						throw new NoSuchScopeFieldException(parentScopeClass, controllerScopeClass, fieldName);
+					} else {
+						session.assertCasts(controllerField, parentField);
 					} 
 				}
 				
-				if( parentField != null ) {
-					session.assertCasts(controllerField, parentField);
-				} 
+				
 			} else {
 				Class<?> fieldType = parentField.getType();
 				

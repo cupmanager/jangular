@@ -68,8 +68,7 @@ public class RepeatNode extends JangularNode {
 	private RepeatNode() {
 	}
 	@Override
-	public void eval(Scope scope, StringBuilder sb, EvaluationContext context)
-			throws EvaluationException {
+	public synchronized void eval(Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session) throws EvaluationException {
 		try {
 			List<?> list = (List<?>)MVEL.executeExpression(listExpression, scope);
 			RepeatNodeScope nodeScope = nodeScopeClass.newInstance();
@@ -78,15 +77,12 @@ public class RepeatNode extends JangularNode {
 				for (Object o : list) {
 					
 					if( i == 0 ){
-					//	setMethod.invoke(nodeScope, parentScopeClass.cast(scope), i, (Object)o);
 						nodeScope.iterate(scope, i, o);
 					} else {
 						nodeScope.iterate(i, o);
 					}
 					
-					
-					node.eval(nodeScope, sb, context);
-					//sb.append(nodeScope);
+					session.eval(node, nodeScope, sb, context);
 					i++;
 				}
 			}
@@ -101,6 +97,14 @@ public class RepeatNode extends JangularNode {
 	public Collection<String> getReferencedVariables() throws CompileExpressionException {
 		Set<String> variables = new HashSet<String>();
 		variables.addAll(node.getReferencedVariables());
+		
+		// if listExpression is like "this.base.years", add "base" to variables.
+		int thisIndex = listExpressionString.indexOf("this.");
+		String e = listExpressionString.substring(thisIndex+5);
+		int idx = e.indexOf(".");
+		if (idx < 0) idx=e.length();
+		
+		variables.add(e.substring(0, idx));
 		
 //		variables.addAll(pc.getInputs().keySet());
 		variables.remove("$index");

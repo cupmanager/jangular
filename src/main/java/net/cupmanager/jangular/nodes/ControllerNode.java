@@ -74,21 +74,32 @@ public class ControllerNode extends JangularNode {
 	
 
 	@Override
-	public void eval(final Scope parentScope, StringBuilder sb, EvaluationContext context)
+	public void eval(final Scope parentScope, StringBuilder sb, EvaluationContext context, EvaluationSession session)
 			throws EvaluationException {
 		
 		try {
+			long t0 = System.currentTimeMillis();
 			AbstractController controllerInstance = controllerClass.newInstance();
 			injector.inject(controllerInstance, context);
-			
-			//Scope controllerScope = controllerScopeClass.newInstance();
+			long afterInject = System.currentTimeMillis();
 			
 			Scope nodeScope = dynamicControllerScopeClass.newInstance();
 			valueCopier.copy(nodeScope, parentScope);
+			long afterCopy= System.currentTimeMillis();
 			
 			controllerInstance.eval(nodeScope);
+			long afterEval = System.currentTimeMillis();
 			
-			node.eval(nodeScope, sb, context);
+			session.eval(node, nodeScope, sb, context);
+			long afterSubEval = System.currentTimeMillis();
+			
+//			System.out.println("ControllerNode: " +
+//					"AfterInject: " + (afterInject-t0) + 
+//					"AfterCopy: " + (afterCopy-t0) +
+//					"AfterEval: " + (afterEval-t0) +
+//					"AfterSubEval: " + (afterSubEval-t0)
+//					);
+			
 		} catch (InstantiationException e) {
 			throw new EvaluationException(this, e);
 		} catch (IllegalAccessException e) {
@@ -204,16 +215,15 @@ public class ControllerNode extends JangularNode {
 				
 				if( controllerField.getAnnotation(In.class) != null ){
 					if( parentField == null ) {
-					//	throw new RuntimeException(String.format(
-					//		"The @In-field %s in %s is not availiable in the parent scope (%s)!",
-					//		fieldName, controllerScopeClass.getName(), parentScopeClass.getName()));
-						throw new NoSuchScopeFieldException(parentScopeClass, controllerScopeClass, fieldName);
-					} else {
-						session.assertCasts(controllerField, parentField);
+						throw new RuntimeException(String.format(
+							"The @In-field %s in %s is not availiable in the parent scope (%s)!",
+							fieldName, controllerScopeClass.getName(), parentScopeClass.getName()));
 					} 
 				}
 				
-				
+				if( parentField != null ) {
+					session.assertCasts(controllerField, parentField);
+				} 
 			} else {
 				Class<?> fieldType = parentField.getType();
 				

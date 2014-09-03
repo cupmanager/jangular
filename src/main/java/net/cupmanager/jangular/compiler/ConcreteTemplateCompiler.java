@@ -26,8 +26,12 @@ import org.attoparser.IAttoParser;
 import org.attoparser.markup.MarkupAttoParser;
 import org.attoparser.markup.MarkupParsingConfiguration;
 import org.attoparser.markup.MarkupParsingConfiguration.ElementBalancing;
+import org.mvel2.optimizers.OptimizerFactory;
 
 public class ConcreteTemplateCompiler implements TemplateCompiler {
+	static {
+		OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+	}
 	
 	private CompilerConfiguration conf;
 

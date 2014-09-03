@@ -16,7 +16,7 @@ public class TextNode extends JangularNode {
 	}
 
 	@Override
-	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session) {
 		sb.append(text);
 	}
 

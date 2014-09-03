@@ -265,6 +265,7 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 			int start = 0;
 			while(matcher.matcher.find(start)) {
 				Range range = new Range(matcher.matcher.start(), matcher.matcher.end());
+				
 				range.nodes.add(compiler.getDirectiveNode(matcher.directiveClass, matcher.getAttributes(), null, context));
 				ranges.add(range);
 				

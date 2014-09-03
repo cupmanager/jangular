@@ -13,11 +13,8 @@ public class CompilerContext {
 
 	public CompilerContext tail() {
 		CompilerContext context = new CompilerContext(resourceSpecification.tail());
+		
 		return context;
-	}
-	
-	public CompilerContext clone() {
-		return new CompilerContext(resourceSpecification);
 	}
 	
 }

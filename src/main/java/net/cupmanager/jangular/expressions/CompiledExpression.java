@@ -37,10 +37,6 @@ public abstract class CompiledExpression {
 	
 	public static CompiledExpression compile(String expression, Class<? extends Scope> scopeClass, CompilerSession session) throws CompileExpressionException{
 		
-		if( expression == null ){
-			expression = "null";
-		}
-		
 		ParserConfiguration conf = new ParserConfiguration();
 		conf.setClassLoader(session.getClassLoader());
 		ParserContext pc = new ParserContext(conf);
@@ -63,11 +59,12 @@ public abstract class CompiledExpression {
 			return new ConstantExpression(value);
 		}
 		
-		if( expression.matches("([a-zA-z_][a-zA-z0-9_\\.]*)") ) {
+		if( !expression.contains("[") && expression.matches("^([a-zA-z_][a-zA-z0-9_\\.]*)$") ) {
 			try {
 				return generateByteCode(session.getClassLoader(), scopeClass, expression);
 			} catch (Exception e) {
 				// Maybe some problem with types. That's okay, let MVEL handle it.
+				e.printStackTrace();
 				session.warn("CompiledExpression couldn't generate bytecode-class for expression \""+expression+"\". Caused by:\n" + e);
 			}
 		}

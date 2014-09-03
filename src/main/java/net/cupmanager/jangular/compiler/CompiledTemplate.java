@@ -9,6 +9,7 @@ import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.JangularNode;
+import net.cupmanager.jangular.nodes.JangularNode.EvaluationSession;
 
 public class CompiledTemplate extends Evaluatable {
 	private JangularNode node;
@@ -24,9 +25,12 @@ public class CompiledTemplate extends Evaluatable {
 	}
 
 	@Override
-	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) 
-			throws EvaluationException{
-		node.eval(scope, sb, context);
+	public EvaluationSession eval(Scope scope, StringBuilder sb, EvaluationContext context) 
+			throws EvaluationException {
+		EvaluationSession session = new EvaluationSession();
+		session.eval(node, scope, sb, context);
+//		node.eval(scope, sb, context, session);
+		return session;
 	}
 
 	void setCompileDuration(long time, TimeUnit unit) {

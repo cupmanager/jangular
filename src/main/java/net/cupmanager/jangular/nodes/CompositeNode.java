@@ -54,10 +54,11 @@ public class CompositeNode extends JangularNode {
 	}
 	
 	@Override
-	public void eval(Scope scope, StringBuilder sb, EvaluationContext context)
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session)
 			throws EvaluationException {
 		for (JangularNode node : fastnodes) {
-			node.eval(scope, sb, context);
+			session.eval(node, scope, sb, context);
+//			node.eval(scope, sb, context);
 		}
 	}
 

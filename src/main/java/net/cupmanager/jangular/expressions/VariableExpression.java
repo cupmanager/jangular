@@ -20,7 +20,8 @@ public class VariableExpression extends CompiledExpression {
 
 	@Override
 	public String evalToString(Scope scope) {
-		return eval(scope).toString();
+		Object obj = eval(scope);
+		return obj == null ? null : obj.toString();
 	}
 
 }

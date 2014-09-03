@@ -51,18 +51,18 @@ public class ConditionalNode extends JangularNode {
 	
 	
 	@Override
-	public void eval(Scope scope, StringBuilder sb, EvaluationContext context)
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session)
 			throws EvaluationException {
 		Boolean result = (Boolean) compiledCondition.eval(scope);
 		if (result) {
-			node.eval(scope, sb, context);
+			session.eval(node, scope, sb, context);
 		} else {
 			
 			if( elseIfCompiledConditions != null ){
 				for( int i = 0; i < elseIfCompiledConditions.length; i++){
 					result = (Boolean) elseIfCompiledConditions[i].eval(scope);
 					if( result ){
-						elseIfNodes.get(i).eval(scope, sb, context);
+						session.eval(elseIfNodes.get(i), scope, sb, context);
 						return;
 					}
 				}
@@ -70,7 +70,7 @@ public class ConditionalNode extends JangularNode {
 			
 			
 			if( elseNode != null ){
-				elseNode.eval(scope, sb, context);
+				session.eval(elseNode, scope, sb, context);
 			}
 		}
 		

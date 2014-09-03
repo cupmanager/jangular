@@ -1,7 +1,6 @@
 package net.cupmanager.jangular.nodes;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,6 +19,7 @@ import net.cupmanager.jangular.compiler.templateloader.NoSuchScopeFieldException
 import net.cupmanager.jangular.exceptions.CompileExpressionException;
 import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.expressions.CompiledExpression;
+import net.cupmanager.jangular.expressions.ConstantExpression;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.injection.Injector;
 
@@ -82,48 +82,49 @@ public class DirectiveNode extends JangularNode {
 	public DirectiveNode(AbstractDirective<?> directiveInstance, JangularNode node, Map<String, String> attrs) throws CompileExpressionException {
 		this.directiveInstance = directiveInstance;
 		this.node = node;
-		this.attrs = attrs;
-		this.transparent = attrs.containsKey("transparent") || directiveInstance.getClass().getAnnotation(Transparent.class) != null;
-		this.hasDirectiveScope = directiveInstance.getScopeClass() != null;
-		
-		this.nodeVariables = new ArrayList<String>(node.getReferencedVariables());
 		
 		this.variables = new HashSet<String>();
+		this.attrs = attrs;
 		
-		if( transparent ){
-			variables.addAll(nodeVariables);
-		}
+		this.transparent = attrs.containsKey("transparent") || directiveInstance.getClass().getAnnotation(Transparent.class) != null;
+		
+		this.hasDirectiveScope = directiveInstance.getScopeClass() != null;
+		
 		for( String variable : attrs.keySet() ) {
 			variables.addAll(CompiledExpression.getReferencedVariables(attrs.get(variable)));
 		}
+		nodeVariables = new ArrayList<String>(node.getReferencedVariables());
+		if( transparent ){
+			variables.addAll(nodeVariables);
+		}
 	}
 	
-	/*private List<String> getDirectiveScopeInNames() {
-		Class<? extends Scope> directiveScopeClass = directiveInstance.getScopeClass();
-		Field[] fields = directiveScopeClass.getFields();
-		
-		List<String> ins = new ArrayList<String>();
-		for( Field f : fields ) {
-			if( f.getAnnotation(In.class) != null ){
-				ins.add(f.getName());
-			}
-		}
-		return ins;
-	}
-	
-	
-	private List<Class<?>> getDirectiveScopeInTypes() {
-		Class<? extends Scope> directiveScopeClass = directiveInstance.getScopeClass();
-		Field[] fields = directiveScopeClass.getFields();
-		
-		List<Class<?>> ins = new ArrayList<Class<?>>();
-		for( Field f : fields ) {
-			if( f.getAnnotation(In.class) != null ){
-				ins.add(f.getType());
-			}
-		}
-		return ins;
-	}*/
+//	private List<String> getDirectiveScopeInNames() {
+//		Class<? extends Scope> directiveScopeClass = directiveInstance.getScopeClass();
+//		Field[] fields = directiveScopeClass.getFields();
+//		
+//		List<String> ins = new ArrayList<String>();
+//		for( Field f : fields ) {
+//			if( f.getAnnotation(In.class) != null ){
+//				ins.add(f.getName());
+//			}
+//		}
+//		return ins;
+//	}
+//	
+//	
+//	private List<Class<?>> getDirectiveScopeInTypes() {
+//		Class<? extends Scope> directiveScopeClass = directiveInstance.getScopeClass();
+//		Field[] fields = directiveScopeClass.getFields();
+//		
+//		List<Class<?>> ins = new ArrayList<Class<?>>();
+//		for( Field f : fields ) {
+//			if( f.getAnnotation(In.class) != null ){
+//				ins.add(f.getType());
+//			}
+//		}
+//		return ins;
+//	}
 	
 	private static Field getFieldSafe(Class<?> c, String fieldName) {
 		Field f = null;
@@ -133,10 +134,7 @@ public class DirectiveNode extends JangularNode {
 		return f;
 	}
 	
-	private List<ScopeField> getFieldsForSubscope(
-			Class<? extends Scope> superScopeClass, 
-			Class<? extends Scope> parentScopeClass,
-			CompilerSession session) throws NoSuchScopeFieldException {
+	public List<ScopeField> getFieldsForSubscope(Class<? extends Scope> superScopeClass, Class<? extends Scope> parentScopeClass) {
 		int attrIndex = 0;
 		List<ScopeField> list = new ArrayList<DirectiveNode.ScopeField>();
 		
@@ -150,51 +148,23 @@ public class DirectiveNode extends JangularNode {
 						f.index = attrs.containsKey(s) ? attrIndex++ : -1;
 						f.inScopeClass = false;
 						f.name = s;
-						if( attrs.containsKey(s) ) {
-							f.parentType = null;
-							f.type = null;
-						} else {
-							Field parentField = getFieldSafe(parentScopeClass, s);
-							if( parentField != null ){
-								f.parentType = parentField.getType();
-								f.type = f.parentType;
-							} else {
-								throw new NoSuchScopeFieldException(parentScopeClass,superScopeClass,s);
-							}
-						}
-						
-						
+						f.parentType = attrs.containsKey(s) ? null : getFieldSafe(parentScopeClass, s).getType();
+						f.type = f.parentType;
 						list.add(f);
 					}
 				}
 				
-				Field[] fields = superScopeClass.getDeclaredFields();
+				Field[] fields = superScopeClass.getFields();
 				for (Field field : fields) {
 					if (field.getAnnotation(In.class) != null) {
-						if( Modifier.isPublic(field.getModifiers()) ){
-							ScopeField f = new ScopeField();
-							f.index = attrs.containsKey(field.getName()) ? attrIndex++ : -1;
-							f.inScopeClass = true;
-							f.name = field.getName();
-							f.type = field.getType();
-							if( attrs.containsKey(field.getName()) ){
-								f.parentType = null;
-							} else {
-								Field parentField = getFieldSafe(parentScopeClass, field.getName());
-								if( parentField != null ){
-									f.parentType = parentField.getType();
-									session.assertCasts(field, parentField);
-								} else {
-									throw new NoSuchScopeFieldException(parentScopeClass,superScopeClass,field);
-								}
-							}
-							 
-							list.add(f);
-						} else {
-							session.warn("The field '"+field.getName()+"' in "+superScopeClass.getCanonicalName()+" has @In but is not public! " +
-									"It will not recieve its value from the " + 
-									(attrs.containsKey(field.getName())?"Node attributes.":"parent Scope."));
-						}
+						ScopeField f = new ScopeField();
+						f.index = attrs.containsKey(field.getName()) ? attrIndex++ : -1;
+						f.inScopeClass = true;
+						f.name = field.getName();
+						f.parentType = attrs.containsKey(field.getName()) ? null : getFieldSafe(parentScopeClass, field.getName()).getType();
+						f.type = field.getType();
+						f.isLiteral = field.getAnnotation(In.class).literal();
+						list.add(f);
 					}
 				}
 			} else {
@@ -204,18 +174,8 @@ public class DirectiveNode extends JangularNode {
 					f.index = attrs.containsKey(s) ? attrIndex++ : -1;
 					f.inScopeClass = false;
 					f.name = s;
-					if( attrs.containsKey(s) ){
-						f.parentType = null;
-						f.type = null;
-					} else {
-						Field parentField = getFieldSafe(parentScopeClass, s);
-						if( parentField != null ){
-							f.parentType = parentField.getType();
-							f.type = f.parentType;
-						} else {
-							throw new NoSuchScopeFieldException(parentScopeClass,superScopeClass,s);
-						}
-					}
+					f.parentType = attrs.containsKey(s) ? null : getFieldSafe(parentScopeClass, s).getType();
+					f.type = f.parentType;
 					list.add(f);
 				}
 			}
@@ -223,34 +183,22 @@ public class DirectiveNode extends JangularNode {
 		} else {
 			if (hasDirectiveScope) {
 //				@In (värden från attribut)
-				Field[] fields = superScopeClass.getDeclaredFields();
+				Field[] fields = superScopeClass.getFields();
 				for (Field field : fields) {
 					if (field.getAnnotation(In.class) != null) {
-						if( Modifier.isPublic(field.getModifiers()) ){
-							if(!attrs.containsKey(field.getName())){
-								session.warn("The field ['"+field.getName()+"', "+field.getType().getCanonicalName()+"] in "+superScopeClass.getCanonicalName()+" has no matching attribute. It will be set to null!");
-							}
-							
-							ScopeField f = new ScopeField();
-							f.index = attrIndex++;
-							f.inScopeClass = true;
-							f.name = field.getName();
-							f.parentType = null;
-							f.type = field.getType();
-							list.add(f);
-						} else {
-							session.warn("The field '"+field.getName()+"' in "+superScopeClass.getCanonicalName()+" has @In but is not public! " +
-										"It will not recieve its value from the Node attributes");
-						}
+						ScopeField f = new ScopeField();
+						f.index = attrIndex++;
+						f.inScopeClass = true;
+						f.name = field.getName();
+						f.parentType = null;
+						f.type = field.getType();
+						f.isLiteral = field.getAnnotation(In.class).literal();
+						list.add(f);
 					}
 				}
 			} else {
 //				nodevariables  (värden från attribut)
 				for (String s : nodeVariables) {
-					if(!attrs.containsKey(s)){
-						session.warn("The field '"+s+"' that is used within the directive "+directiveInstance.getClass().getCanonicalName()+" has no matching attribute. It will be set to null!");
-					}
-					
 					ScopeField f = new ScopeField();
 					f.index = attrIndex++;
 					f.inScopeClass = false;
@@ -272,12 +220,10 @@ public class DirectiveNode extends JangularNode {
 			Class<? extends EvaluationContext> evaluationContextClass,
 			CompilerSession session) throws NoSuchScopeFieldException, CompileExpressionException {
 
-		
 //		List<String> inNames = null;
 //		List<Class<?>> inTypes = null;
 		
-		List<ScopeField> fields = getFieldsForSubscope(directiveInstance.getScopeClass(), parentScopeClass, session);
-		
+		List<ScopeField> fields = getFieldsForSubscope(directiveInstance.getScopeClass(), parentScopeClass);
 		
 		directiveScopeClass = createDirectiveScopeClass(session.getClassLoader(), Objects.firstNonNull(directiveInstance.getScopeClass(), Scope.class), parentScopeClass, session, fields);
 		
@@ -295,12 +241,15 @@ public class DirectiveNode extends JangularNode {
 			if (field.index > -1) {
 				attrFields.add(field);
 			}
-			
 		}
 		
 		inExpressions = new CompiledExpression[attrFields.size()];
 		for (ScopeField f : attrFields){
-			inExpressions[f.index] = CompiledExpression.compile(attrs.get(f.name), parentScopeClass, session);
+			if (f.isLiteral) {
+				inExpressions[f.index] = new ConstantExpression(attrs.get(f.name));
+			} else {
+				inExpressions[f.index] = CompiledExpression.compile(attrs.get(f.name), parentScopeClass, session);
+			}
 		}
 		
 		this.node.compileScope(directiveScopeClass, evaluationContextClass, session);
@@ -314,7 +263,6 @@ public class DirectiveNode extends JangularNode {
 			Class<? extends Injector> injectorClass = Injector.createInjectorClass(session, directiveInstance.getClass(), evaluationContextClass);
 			this.injector = injectorClass.newInstance();
 			
-			
 		} catch (InstantiationException e) {
 			throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {
@@ -322,7 +270,11 @@ public class DirectiveNode extends JangularNode {
 		}
 	}
 	
+	
+	
+	
 	private static class ScopeField {
+		public boolean isLiteral;
 		public Class<?> type;
 		public String name;
 		public Class<?> parentType;
@@ -505,7 +457,7 @@ public class DirectiveNode extends JangularNode {
 
 
 	@Override
-	public void eval(final Scope scope, StringBuilder sb, EvaluationContext context) 
+	public void eval(final Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session) 
 			throws EvaluationException {
 		
 		Object[] inValues = new Object[inExpressions.length];
@@ -522,7 +474,7 @@ public class DirectiveNode extends JangularNode {
 				directiveInstance.eval(nodeScope);
 			}
 			
-			node.eval(nodeScope, sb, context);
+			session.eval(node, nodeScope, sb, context);
 		} catch (InstantiationException e) {
 			throw new EvaluationException(this, e);
 		} catch (IllegalAccessException e) {

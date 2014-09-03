@@ -21,7 +21,7 @@ public class ExpressionNode extends JangularNode {
 	}
 
 	@Override
-	public void eval(Scope scope, StringBuilder sb, EvaluationContext context) {
+	public void eval(Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session) {
 		sb.append(compiledExpression.evalToString(scope));
 	}
 

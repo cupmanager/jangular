@@ -57,7 +57,7 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 	
 	
 	/* Find expressions like {=......} */
-	private static Pattern expressionPattern = Pattern.compile("\\{=(.*?)\\}");
+	private static Pattern expressionPattern = Pattern.compile("\\{=(.*?)(?<!\\})\\}(?!\\})");
 
 	private Stack<CompositeNode> stack = new Stack<CompositeNode>();
 	private Stack<ElementMemory> attrStack = new Stack<ElementMemory>();

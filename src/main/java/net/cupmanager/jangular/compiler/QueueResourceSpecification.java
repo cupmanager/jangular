@@ -1,11 +1,9 @@
-package net.cupmanager.jangular.util;
+package net.cupmanager.jangular.compiler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import net.cupmanager.jangular.compiler.ResourceSpecification;
 
 public class QueueResourceSpecification implements ResourceSpecification {
 

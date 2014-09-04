@@ -4,13 +4,13 @@ import java.util.concurrent.TimeUnit;
 
 import net.cupmanager.jangular.compiler.CompiledTemplate;
 import net.cupmanager.jangular.compiler.CompilerConfiguration;
+import net.cupmanager.jangular.compiler.QueueResourceSpecification;
 import net.cupmanager.jangular.compiler.TemplateCompiler;
 import net.cupmanager.jangular.compiler.caching.GuavaCachingStrategy;
 import net.cupmanager.jangular.compiler.templateloader.FileTemplateLoader;
 import net.cupmanager.jangular.exceptions.CompileException;
 import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.util.IncludeDirective;
-import net.cupmanager.jangular.util.QueueResourceSpecification;
 
 import org.junit.Test;
 

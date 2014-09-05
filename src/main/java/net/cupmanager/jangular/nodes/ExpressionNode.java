@@ -22,7 +22,12 @@ public class ExpressionNode extends JangularNode {
 
 	@Override
 	public void eval(Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session) {
-		sb.append(compiledExpression.evalToString(scope));
+		try {
+			sb.append(compiledExpression.evalToString(scope));
+		} catch (RuntimeException e) {
+			throw e;
+		}
+		
 	}
 
 	@Override

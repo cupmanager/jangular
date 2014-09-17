@@ -25,6 +25,7 @@ public class ExpressionNode extends JangularNode {
 		try {
 			sb.append(compiledExpression.evalToString(scope));
 		} catch (RuntimeException e) {
+			System.err.println("Exception in ExpressionNode: " + expression);
 			throw e;
 		}
 		

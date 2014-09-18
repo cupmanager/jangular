@@ -18,6 +18,7 @@ import net.cupmanager.jangular.nodes.CompositeNode;
 import net.cupmanager.jangular.nodes.ConditionalNode;
 import net.cupmanager.jangular.nodes.ControllerNode;
 import net.cupmanager.jangular.nodes.ExpressionNode;
+import net.cupmanager.jangular.nodes.JAttrNode;
 import net.cupmanager.jangular.nodes.JClassNode;
 import net.cupmanager.jangular.nodes.JangularNode;
 import net.cupmanager.jangular.nodes.RepeatNode;
@@ -112,6 +113,11 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 				}
 				
 				node.add(new TextNode("\""));
+			}
+			
+			String jAttrValue = attributes.get("j-attr");
+			if (jAttrValue != null) {
+				node.add(new JAttrNode(jAttrValue));
 			}
 		}
 		return node;

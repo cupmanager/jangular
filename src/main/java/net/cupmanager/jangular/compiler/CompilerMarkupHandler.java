@@ -178,7 +178,7 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 				ifNode.addElseIf(elementMemory.attrs.get("test"),node);
 				return;
 			} else {
-				throw new RuntimeException("j-else must follow directly behind an j-if");
+				throw new RuntimeException("j-else-if must follow directly behind an j-if");
 			}
 		} else if ("j-controller".equals(elementName)) {
 			String controllerClassName = elementMemory.attrs.get("controller");

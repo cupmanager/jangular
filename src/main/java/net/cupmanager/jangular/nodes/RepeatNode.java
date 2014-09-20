@@ -70,7 +70,7 @@ public class RepeatNode extends JangularNode {
 	@Override
 	public synchronized void eval(Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session) throws EvaluationException {
 		try {
-			List<?> list = (List<?>)MVEL.executeExpression(listExpression, scope);
+			Collection<?> list = (Collection<?>)MVEL.executeExpression(listExpression, scope);
 			RepeatNodeScope nodeScope = nodeScopeClass.newInstance();
 			if (list != null) {
 				int i = 0;
@@ -133,7 +133,7 @@ public class RepeatNode extends JangularNode {
 			pc.addInput("this", parentScopeClass);
 			this.listExpression = MVEL.compileExpression("" + listExpressionString , pc);
 			
-			varType = MVEL.analyze("this." + listVarName + ".get(0)", pc);
+			varType = MVEL.analyze("this." + listVarName + ".iterator().next()", pc);
 		} catch (CompileException e ) {
 			throw new CompileExpressionException(e);
 		}

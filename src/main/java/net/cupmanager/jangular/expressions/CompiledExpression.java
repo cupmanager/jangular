@@ -46,6 +46,7 @@ public abstract class CompiledExpression {
 		try {
 			pc.setStrictTypeEnforcement(true);
 			pc.addInput("this", scopeClass);
+			pc.addPackageImport("java.util");
 			for (Field f : scopeClass.getFields()) {
 				pc.addInput(f.getName(), f.getType());
 			}

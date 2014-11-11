@@ -1,9 +1,11 @@
 package net.cupmanager.jangular.nodes;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import net.cupmanager.jangular.Scope;
@@ -23,6 +25,9 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.signature.SignatureReader;
+import org.objectweb.asm.signature.SignatureVisitor;
+import org.objectweb.asm.signature.SignatureWriter;
 
 public class RepeatNode extends JangularNode {
 	
@@ -90,7 +95,10 @@ public class RepeatNode extends JangularNode {
 			throw new EvaluationException(node, e);
 		} catch (IllegalAccessException e) {
 			throw new EvaluationException(node, e);
-		} 
+		} catch (RuntimeException e) {
+			System.err.println("Exception for expression: " + listExpressionString);
+			throw e;
+		}
 	}
 
 	@Override
@@ -165,8 +173,12 @@ public class RepeatNode extends JangularNode {
 		
 		for (String field : getReferencedVariables()) {
 			try {
-				Type type = Type.getType(parentScopeClass.getField(field).getType());
-				fv = cw.visitField(Opcodes.ACC_PUBLIC, field, type.getDescriptor(), null, null);
+				Field f = parentScopeClass.getField(field);
+				Type type = Type.getType(f.getType());
+				
+				java.lang.reflect.Type t = f.getGenericType();
+				
+				fv = cw.visitField(Opcodes.ACC_PUBLIC, field, type.getDescriptor(), getSignature(t), null);
 				fv.visitEnd();
 			} catch (NoSuchFieldException e) {
 				throw new NoSuchScopeFieldException(e);
@@ -240,7 +252,31 @@ public class RepeatNode extends JangularNode {
 		return cl;
 	}
 
+	
 
+	public static String getSignature(java.lang.reflect.Type t) {
+		String signature = null;
+		if (t instanceof Class) {
+			signature = Type.getType((Class)t).getDescriptor();
+		} else if (t instanceof ParameterizedType) {
+			ParameterizedType par_t = (ParameterizedType) t;
+			java.lang.reflect.Type[] generictypes = par_t.getActualTypeArguments();
+			String s = "";
+			for (java.lang.reflect.Type gt : generictypes) {
+				s += getSignature(gt);
+			}
+			
+			Type type = Type.getType((Class) par_t.getRawType());
+			
+			String descr = type.getDescriptor();
+			descr = descr.substring(0, descr.length()-1);
+			signature = descr + "<"+s+">" + ";";
+		} else {
+			throw new IllegalArgumentException("t was unknown type: " + t.getClass());
+		}
+		return signature;
+	}
+	
 	@Override
 	public JangularNode clone() {
 		RepeatNode rn = new RepeatNode();

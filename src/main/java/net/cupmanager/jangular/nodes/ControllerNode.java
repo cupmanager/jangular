@@ -317,5 +317,9 @@ public class ControllerNode extends JangularNode {
 		
 		return JangularCompilerUtils.loadScopeClass(classLoader, cw.toByteArray(), className);
 	}
-
+	
+	
+	public String toString() {
+		return getClass() + ": " + this.controllerClass;
+	}
 }

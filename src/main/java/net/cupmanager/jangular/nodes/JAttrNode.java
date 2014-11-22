@@ -34,11 +34,21 @@ public class JAttrNode extends JangularNode {
 	public synchronized void eval(Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session) {
 		Map<String, Object> result = (Map<String, Object>) MVEL.executeExpression(expression, scope);
 		for (Map.Entry<String, Object> entry : result.entrySet()) {
-			if (entry.getValue() != null) {
-				sb.append(entry.getKey());
-				sb.append("=\"");
-				sb.append(entry.getValue());
-				sb.append("\"");
+			Object v = entry.getValue();
+			if (v != null) {
+				if (v instanceof Boolean) {
+					if ((Boolean)v) {
+						v = entry.getKey();
+					} else {
+						v = null;
+					}
+				}
+				if (v != null) {
+					sb.append(entry.getKey());
+					sb.append("=\"");
+					sb.append(v);
+					sb.append("\"");
+				}
 			}
 		}
 	}

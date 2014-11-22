@@ -289,4 +289,11 @@ public class RepeatNode extends JangularNode {
 		rn.listVarName = listVarName;
 		return rn;
 	}
+	
+	
+	
+	public String toString() {
+		return getClass() + " repeat: " + varName + " in " + listExpressionString;
+	}
+	
 }

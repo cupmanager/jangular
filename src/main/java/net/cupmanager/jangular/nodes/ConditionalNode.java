@@ -138,5 +138,11 @@ public class ConditionalNode extends JangularNode {
 		}
 		this.elseNode = elseNode;
 	}
-
+	
+	
+	
+	public String toString() {
+		return getClass() + " test: " + condition;
+	}
+	
 }

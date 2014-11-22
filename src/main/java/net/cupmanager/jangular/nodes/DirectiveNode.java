@@ -481,5 +481,8 @@ public class DirectiveNode extends JangularNode {
 			throw new EvaluationException(this, e);
 		} 
 	}
-
+	
+	public String toString() {
+		return getClass() + " attrs: " + this.attrs;
+	}
 }

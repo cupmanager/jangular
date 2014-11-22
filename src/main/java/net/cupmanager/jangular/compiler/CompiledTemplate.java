@@ -1,7 +1,11 @@
 package net.cupmanager.jangular.compiler;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import net.cupmanager.jangular.Evaluatable;
@@ -10,6 +14,9 @@ import net.cupmanager.jangular.exceptions.EvaluationException;
 import net.cupmanager.jangular.injection.EvaluationContext;
 import net.cupmanager.jangular.nodes.JangularNode;
 import net.cupmanager.jangular.nodes.JangularNode.EvaluationSession;
+import net.cupmanager.jangular.nodes.JangularNode.EvaluationSession.CountDur;
+
+import com.google.common.primitives.Longs;
 
 public class CompiledTemplate extends Evaluatable {
 	private JangularNode node;
@@ -30,6 +37,23 @@ public class CompiledTemplate extends Evaluatable {
 		EvaluationSession session = new EvaluationSession();
 		session.eval(node, scope, sb, context);
 //		node.eval(scope, sb, context, session);
+		if (session.debug) {
+			
+			List<Map.Entry<JangularNode,CountDur>> entries = new ArrayList<Map.Entry<JangularNode,CountDur>>();
+			entries.addAll(session.durations.entrySet());
+			
+			Collections.sort(entries, new Comparator<Map.Entry<JangularNode,CountDur>>() {
+				@Override
+				public int compare(Entry<JangularNode, CountDur> o1, Entry<JangularNode, CountDur> o2) {
+					return -Longs.compare(o1.getValue().duration, o2.getValue().duration);
+				}
+			});
+			
+			for (Map.Entry<JangularNode,CountDur> e : entries) {
+				System.out.println(e);
+			}
+			
+		}
 		return session;
 	}
 

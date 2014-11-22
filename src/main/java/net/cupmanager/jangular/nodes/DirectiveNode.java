@@ -459,7 +459,7 @@ public class DirectiveNode extends JangularNode {
 	@Override
 	public void eval(final Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session) 
 			throws EvaluationException {
-		
+		long start = System.currentTimeMillis();
 		Object[] inValues = new Object[inExpressions.length];
 		for (int i = 0; i < inValues.length; i++ ) {
 			inValues[i] = inExpressions[i].eval(scope);
@@ -472,9 +472,11 @@ public class DirectiveNode extends JangularNode {
 			if( hasDirectiveScope ) {
 				injector.inject(directiveInstance, context);
 				directiveInstance.eval(nodeScope);
+				
 			}
 			
 			session.eval(node, nodeScope, sb, context);
+			
 		} catch (InstantiationException e) {
 			throw new EvaluationException(this, e);
 		} catch (IllegalAccessException e) {
@@ -483,6 +485,6 @@ public class DirectiveNode extends JangularNode {
 	}
 	
 	public String toString() {
-		return getClass() + " attrs: " + this.attrs;
+		return getClass() + " directive: " + directiveInstance + ". Attrs: " + this.attrs;
 	}
 }

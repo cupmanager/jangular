@@ -140,5 +140,12 @@ public class CompositeNode extends JangularNode {
 		}	
 		return null;
 	}
-
+	
+	
+	public String toString() {
+		int size = 0;
+		if (nodes != null) size = nodes.size();
+		if (fastnodes != null) size = fastnodes.length;
+		return "CompositeNode with " + size + " nodes";
+	}
 }

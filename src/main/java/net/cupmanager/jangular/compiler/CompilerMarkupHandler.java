@@ -246,11 +246,54 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 		String text = String.copyValueOf(buffer, offset, len);
 		parseText(text, node);
 	}
+	public void handleText(String text) {
+		CompositeNode node = stack.peek();
+		parseText(text, node);
+	}
 	
 	
 	
 	
 	
+	@Override
+	public void handleDocType(String elementName, String publicId, String systemId, String internalSubset, int line, int col) throws AttoParseException {
+		if (publicId != null) {
+			if (systemId != null) {
+				handleText(String.format("<!DOCTYPE %s PUBLIC \"%s\" \"%s\">", elementName, publicId, systemId));
+			} else {
+				handleText(String.format("<!DOCTYPE %s PUBLIC \"%s\">", elementName, publicId));
+			}
+		} else {
+			handleText("<!DOCTYPE "+elementName+">");
+		}
+	}
+
+	@Override
+	public void handleComment(char[] buffer, int offset, int len, int line, int col) throws AttoParseException {
+		handleText("<!--");
+		handleText(buffer, offset, len, line, col);
+		handleText("-->");
+	}
+
+	@Override
+	public void handleCDATASection(char[] buffer, int offset, int len, int line, int col) throws AttoParseException {
+		super.handleCDATASection(buffer, offset, len, line, col);
+	}
+
+	@Override
+	public void handleXmlDeclaration(String version, String encoding, String standalone, int line, int col) throws AttoParseException {
+		super.handleXmlDeclaration(version, encoding, standalone, line, col);
+	}
+
+	@Override
+	public void handleProcessingInstruction(String target, String content, int line, int col) throws AttoParseException {
+		super.handleProcessingInstruction(target, content, line, col);
+	}
+
+
+
+
+
 	private static class Range {
 		public int start;
 		public int end;

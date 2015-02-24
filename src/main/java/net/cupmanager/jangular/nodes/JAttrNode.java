@@ -44,6 +44,7 @@ public class JAttrNode extends JangularNode {
 					}
 				}
 				if (v != null) {
+					sb.append(" ");
 					sb.append(entry.getKey());
 					sb.append("=\"");
 					sb.append(v);

@@ -143,6 +143,7 @@ public class RepeatNode extends JangularNode {
 			
 			varType = MVEL.analyze("this." + listVarName + ".iterator().next()", pc);
 		} catch (CompileException e ) {
+			System.err.println("Tried to analyze:  this."+listVarName);
 			throw new CompileExpressionException(e);
 		}
 		

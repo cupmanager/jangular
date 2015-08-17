@@ -174,7 +174,11 @@ public class DirectiveNode extends JangularNode {
 					f.index = attrs.containsKey(s) ? attrIndex++ : -1;
 					f.inScopeClass = false;
 					f.name = s;
-					f.parentType = attrs.containsKey(s) ? null : getFieldSafe(parentScopeClass, s).getType();
+					Field fieldet = getFieldSafe(parentScopeClass, s);
+					if (fieldet == null) {
+						throw new NullPointerException(String.format("No field '%s' in scope class %s", s, parentScopeClass));
+					}
+					f.parentType = attrs.containsKey(s) ? null : fieldet.getType();
 					f.type = f.parentType;
 					list.add(f);
 				}
@@ -220,22 +224,10 @@ public class DirectiveNode extends JangularNode {
 			Class<? extends EvaluationContext> evaluationContextClass,
 			CompilerSession session) throws NoSuchScopeFieldException, CompileExpressionException {
 
-//		List<String> inNames = null;
-//		List<Class<?>> inTypes = null;
-		
 		List<ScopeField> fields = getFieldsForSubscope(directiveInstance.getScopeClass(), parentScopeClass);
 		
 		directiveScopeClass = createDirectiveScopeClass(session.getClassLoader(), Objects.firstNonNull(directiveInstance.getScopeClass(), Scope.class), parentScopeClass, session, fields);
 		
-//		if (hasDirectiveScope) {
-//			directiveScopeClass = createDirectiveScopeClass(session.getClassLoader(),directiveInstance.getScopeClass(),parentScopeClass,session);
-//			inNames = getDirectiveScopeInNames();
-//			inTypes = getDirectiveScopeInTypes();
-//		} else {
-//			directiveScopeClass = createDirectiveScopeClass(session.getClassLoader(),Scope.class,parentScopeClass,session);
-//			inNames = nodeVariables;
-//		}
-
 		List<ScopeField> attrFields = new ArrayList<ScopeField>();
 		for (ScopeField field : fields) {
 			if (field.index > -1) {
@@ -246,9 +238,15 @@ public class DirectiveNode extends JangularNode {
 		inExpressions = new CompiledExpression[attrFields.size()];
 		for (ScopeField f : attrFields){
 			if (f.isLiteral) {
-				inExpressions[f.index] = new ConstantExpression(attrs.get(f.name));
+				String value = attrs.get(f.name);
+				if (value != null) {
+					inExpressions[f.index] = new ConstantExpression(value);
+				}
 			} else {
-				inExpressions[f.index] = CompiledExpression.compile(attrs.get(f.name), parentScopeClass, session);
+				String value = attrs.get(f.name);
+				if (value != null) {
+					inExpressions[f.index] = CompiledExpression.compile(value, parentScopeClass, session);
+				}
 			}
 		}
 		
@@ -462,7 +460,10 @@ public class DirectiveNode extends JangularNode {
 		long start = System.currentTimeMillis();
 		Object[] inValues = new Object[inExpressions.length];
 		for (int i = 0; i < inValues.length; i++ ) {
-			inValues[i] = inExpressions[i].eval(scope);
+			CompiledExpression e = inExpressions[i];
+			if (e != null) {
+				inValues[i] = e.eval(scope);
+			}
 		}
 		
 		try {

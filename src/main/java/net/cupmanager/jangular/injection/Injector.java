@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.cupmanager.jangular.annotations.Context;
 import net.cupmanager.jangular.annotations.Provides;
@@ -27,7 +28,7 @@ public abstract class Injector {
 	
 	
 	
-	private static int injectorClassSuffix = 0;
+	private static AtomicInteger injectorClassSuffix = new AtomicInteger();
 	public static Class<? extends Injector> createInjectorClass(
 			CompilerSession session, 
 			Class<?> targetClass, 
@@ -36,7 +37,7 @@ public abstract class Injector {
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
 
-		String className = "Injector" + injectorClassSuffix++;
+		String className = "Injector" + injectorClassSuffix.incrementAndGet();
 		
 		cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className, null,
 				Type.getInternalName(Injector.class), null);

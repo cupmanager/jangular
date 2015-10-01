@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.compiler.CompilerSession;
@@ -122,7 +123,7 @@ public class RepeatNode extends JangularNode {
 		return variables;
 	}
 	
-	public static int repeatScopeSuffix = 0;
+	public static AtomicInteger repeatScopeSuffix = new AtomicInteger();
 	
 	
 	@Override
@@ -147,7 +148,7 @@ public class RepeatNode extends JangularNode {
 			throw new CompileExpressionException(e);
 		}
 		
-		String className = "RepeatScope" + (repeatScopeSuffix++);
+		String className = "RepeatScope" + (repeatScopeSuffix.incrementAndGet());
 		String parentClassName = parentScopeClass.getName().replace('.', '/');
 		
 		Class<? extends RepeatNodeScope> cl = createRepeatScopeClass(parentScopeClass, session, varType, className, parentClassName);

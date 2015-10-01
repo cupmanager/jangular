@@ -23,7 +23,13 @@ public class ExpressionNode extends JangularNode {
 	@Override
 	public void eval(Scope scope, StringBuilder sb, EvaluationContext context, EvaluationSession session) {
 		try {
-			sb.append(compiledExpression.evalToString(scope));
+			Object obj = compiledExpression.eval(scope);
+			if (obj == null) {
+				sb.append("[null]");
+			} else {
+				sb.append(obj.toString());
+			}
+//			sb.append(compiledExpression.evalToString(scope));
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			System.err.println("Exception in ExpressionNode: " + expression);

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.cupmanager.jangular.AbstractController;
 import net.cupmanager.jangular.Scope;
@@ -151,7 +152,7 @@ public class ControllerNode extends JangularNode {
 		return f;
 	}
 	
-	public static int controllerScopeSuffix = 0;
+	public static AtomicInteger controllerScopeSuffix = new AtomicInteger();
 	
 	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
@@ -189,7 +190,7 @@ public class ControllerNode extends JangularNode {
 		FieldVisitor fv;
 		MethodVisitor mv;
 
-		String className = "ControllerScope" + controllerScopeSuffix++;
+		String className = "ControllerScope" + controllerScopeSuffix.incrementAndGet();
 		
 		cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className, null,
 				Type.getInternalName(controllerScopeClass), null);
@@ -255,7 +256,7 @@ public class ControllerNode extends JangularNode {
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
 
-		String className = "ControllerValueCopier" + controllerScopeSuffix++;
+		String className = "ControllerValueCopier" + controllerScopeSuffix.incrementAndGet();
 		
 		cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className, null,
 				Type.getInternalName(ControllerScopeValueCopier.class), null);

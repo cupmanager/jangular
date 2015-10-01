@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.cupmanager.jangular.AbstractDirective;
 import net.cupmanager.jangular.Scope;
@@ -217,7 +218,8 @@ public class DirectiveNode extends JangularNode {
 		return list;
 	}
 
-	public static int directiveScopeSuffix = 0;
+//	public static int directiveScopeSuffix = 0;
+	public static AtomicInteger directiveScopeSuffix = new AtomicInteger(0);
 	
 	@Override
 	public void compileScope(Class<? extends Scope> parentScopeClass, 
@@ -290,7 +292,7 @@ public class DirectiveNode extends JangularNode {
 		FieldVisitor fv;
 		MethodVisitor mv;
 
-		String className = "DirectiveScope" + directiveScopeSuffix++;
+		String className = "DirectiveScope" + directiveScopeSuffix.incrementAndGet();
 		
 		cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className, null,
 				Type.getInternalName(scopeClass), null);
@@ -338,7 +340,7 @@ public class DirectiveNode extends JangularNode {
 		ClassWriter cw = new ClassWriter(0);
 		MethodVisitor mv;
 
-		String className = "DirectiveValueCopier" + directiveScopeSuffix++;
+		String className = "DirectiveValueCopier" + directiveScopeSuffix.incrementAndGet();
 		
 		cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className, null,
 				DirectiveScopeValueCopier.class.getName().replace('.', '/'), null);

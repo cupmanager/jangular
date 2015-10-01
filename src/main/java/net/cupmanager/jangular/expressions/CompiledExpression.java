@@ -2,6 +2,7 @@ package net.cupmanager.jangular.expressions;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.cupmanager.jangular.Scope;
 import net.cupmanager.jangular.compiler.CompilerSession;
@@ -73,12 +74,12 @@ public abstract class CompiledExpression {
 		return new VariableExpression(compiledExpression);
 	}
 	
-	private static int compiledExpressionSuffix = 0;
+	private static AtomicInteger compiledExpressionSuffix = new AtomicInteger(0);
 	
 
 	private static CompiledExpression generateByteCode(ClassLoader classLoader, Class<? extends Scope> scopeClass, String expression) throws NoSuchFieldException, SecurityException{
 		
-		String className = "CompiledExpression_" + scopeClass.getSimpleName() + "_" + (compiledExpressionSuffix++);
+		String className = "CompiledExpression_" + scopeClass.getSimpleName() + "_" + (compiledExpressionSuffix.incrementAndGet());
 		String parentClassName = Type.getInternalName(scopeClass);
 		
 		String[] parts = expression.split("\\.");

@@ -113,6 +113,9 @@ public abstract class Injector {
 				}
 			} 
 		}
+		if (c.getSuperclass() != null) {
+			fields.addAll(getInjectableFields(c.getSuperclass(), session));
+		}
 		return fields;
 	}
 	

@@ -277,7 +277,10 @@ public class CompilerMarkupHandler extends AbstractStandardMarkupAttoHandler {
 
 	@Override
 	public void handleCDATASection(char[] buffer, int offset, int len, int line, int col) throws AttoParseException {
-		super.handleCDATASection(buffer, offset, len, line, col);
+//		super.handleCDATASection(buffer, offset, len, line, col);
+		handleText("<![CDATA[");
+		handleText(buffer, offset, len, line, col);
+		handleText("]]>");
 	}
 
 	@Override
